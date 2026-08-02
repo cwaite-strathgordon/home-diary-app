@@ -1,0 +1,97 @@
+@if (isAuthenticated()) {
+  <div class="app-shell">
+
+    <!-- ── Top toolbar ─────────────────────────────────────────── -->
+    <mat-toolbar class="app-toolbar">
+
+      <div class="toolbar-logo">
+        <img src="assets/images/title-bar-app-name.png" alt="HomeDiary" class="logo-img" />
+      </div>
+
+      <span class="toolbar-spacer"></span>
+
+      <div class="toolbar-search">
+        <mat-icon class="search-icon">search</mat-icon>
+        <input class="search-input" type="text" placeholder="Search anything…" />
+      </div>
+
+      <span class="toolbar-spacer"></span>
+
+      <div class="toolbar-right">
+        <button mat-icon-button matBadge="3" matBadgeSize="small" class="notif-btn"
+                matTooltip="Notifications">
+          <mat-icon>notifications</mat-icon>
+        </button>
+
+        <div class="user-info">
+          <div class="user-avatar">
+            {{ (auth.currentUser()?.firstName || 'A')[0] }}
+          </div>
+          <div class="user-text">
+            <span class="user-welcome">Welcome,</span>
+            <span class="user-name">{{ auth.currentUser()?.firstName || 'Alex' }} &#9662;</span>
+          </div>
+        </div>
+
+        <button mat-icon-button (click)="signOut()" matTooltip="Sign out" class="signout-btn">
+          <mat-icon>logout</mat-icon>
+        </button>
+      </div>
+    </mat-toolbar>
+
+    <!-- ── Sidenav + content ─────────────────────────────────── -->
+    <mat-sidenav-container class="sidenav-container">
+
+      <mat-sidenav mode="side" opened class="app-sidenav">
+        <mat-nav-list class="nav-list">
+
+          <a mat-list-item routerLink="/dashboard" routerLinkActive="nav-active">
+            <mat-icon matListItemIcon>home</mat-icon>
+            <span matListItemTitle>Dashboard</span>
+          </a>
+
+          <a mat-list-item routerLink="/events" routerLinkActive="nav-active">
+            <mat-icon matListItemIcon>task_alt</mat-icon>
+            <span matListItemTitle>Tasks</span>
+            <span matListItemMeta class="nav-count-badge">8</span>
+          </a>
+
+          <a mat-list-item routerLink="/maintenance" routerLinkActive="nav-active">
+            <mat-icon matListItemIcon>handyman</mat-icon>
+            <span matListItemTitle>Maintenance</span>
+          </a>
+
+          <a mat-list-item routerLink="/calendar" routerLinkActive="nav-active">
+            <mat-icon matListItemIcon>calendar_month</mat-icon>
+            <span matListItemTitle>Calendar</span>
+          </a>
+
+          <a mat-list-item routerLink="/documents" routerLinkActive="nav-active">
+            <mat-icon matListItemIcon>folder_open</mat-icon>
+            <span matListItemTitle>Documents</span>
+          </a>
+
+          <a mat-list-item routerLink="/settings" routerLinkActive="nav-active">
+            <mat-icon matListItemIcon>settings</mat-icon>
+            <span matListItemTitle>Settings</span>
+          </a>
+
+        </mat-nav-list>
+
+        <div class="sidenav-spacer"></div>
+
+        <!-- Decorative illustration -->
+        <div class="sidenav-art">
+          <img src="assets/images/menu-bar-background.png" alt="" />
+        </div>
+      </mat-sidenav>
+
+      <mat-sidenav-content class="main-content">
+        <router-outlet />
+      </mat-sidenav-content>
+
+    </mat-sidenav-container>
+  </div>
+} @else {
+  <router-outlet />
+}

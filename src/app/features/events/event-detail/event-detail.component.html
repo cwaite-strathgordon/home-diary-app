@@ -1,0 +1,64 @@
+<h2 mat-dialog-title class="dialog-title">
+  <span class="title-icon-wrap">
+    <mat-icon>assignment</mat-icon>
+  </span>
+  {{ event.title }}
+</h2>
+
+<mat-dialog-content class="detail-content">
+
+  <div class="meta-row">
+    <span class="chip status">{{ event.eventStatusTitle ?? 'No status' }}</span>
+    <span class="chip type">{{ event.eventTypeTitle ?? 'No type' }}</span>
+    <span class="chip area">{{ event.areaTitle ?? 'No area' }}</span>
+  </div>
+
+  @if (event.description) {
+    <p class="description">{{ event.description }}</p>
+  }
+
+  <mat-divider />
+
+  <div class="detail-grid">
+    <div class="detail-item">
+      <span class="label">Event Date</span>
+      <span>{{ event.eventDate ? (event.eventDate | date:'dd/MM/yyyy') : '—' }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="label">Created By</span>
+      <span>{{ event.createdByFirstName }} {{ event.createdByLastName }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="label">Created</span>
+      <span>{{ event.createdDate ? (event.createdDate | date:'dd/MM/yyyy') : '—' }}</span>
+    </div>
+    <div class="detail-item">
+      <span class="label">Last Updated</span>
+      <span>{{ event.updatedDate ? (event.updatedDate | date:'dd/MM/yyyy') : '—' }}</span>
+    </div>
+  </div>
+
+  @if (contacts().length) {
+    <mat-divider />
+    <h3 class="contacts-heading">Contacts</h3>
+    <mat-chip-set>
+      @for (c of contacts(); track c.contactId) {
+        <mat-chip>
+          <mat-icon matChipAvatar>person</mat-icon>
+          {{ c.firstName }} {{ c.lastName }}
+          @if (c.companyName) {
+            <span class="company">&nbsp;({{ c.companyName }})</span>
+          }
+        </mat-chip>
+      }
+    </mat-chip-set>
+  }
+
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="close()">Close</button>
+  <button mat-flat-button class="edit-btn" (click)="edit()">
+    <mat-icon>edit</mat-icon> Edit
+  </button>
+</mat-dialog-actions>

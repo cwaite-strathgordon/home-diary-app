@@ -1,0 +1,144 @@
+// ── Dialog padding alignment ──────────────────────────────────────────────────
+
+::ng-deep {
+  .mat-mdc-dialog-title  { padding: 16px 24px 8px !important; }
+  .mat-mdc-dialog-content { padding: 0 24px !important; }
+  .mat-mdc-dialog-actions { padding: 12px 24px 16px !important; }
+}
+
+// ── Dialog title ──────────────────────────────────────────────────────────────
+
+.dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0d0d0d;
+  padding: 8px 0 4px !important;
+  margin: 0 !important;
+}
+
+.title-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2a7a7a, #3d9999);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    color: #ffffff;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// ── Content ───────────────────────────────────────────────────────────────────
+
+.detail-content {
+  padding: 8px 0 4px !important;
+}
+
+// ── Status / type / area chips ────────────────────────────────────────────────
+
+.meta-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.chip {
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status { background: #e8f4f4; color: #2a7a7a; }
+.type   { background: #fdf0e0; color: #e07820; }
+.area   { background: #f0ece4; color: #3a3a3a; }
+
+// ── Description ───────────────────────────────────────────────────────────────
+
+.description {
+  color: #3a3a3a;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+
+// ── Divider ───────────────────────────────────────────────────────────────────
+
+mat-divider {
+  border-color: #e8e4dc !important;
+  margin: 4px 0 !important;
+}
+
+// ── Detail grid ───────────────────────────────────────────────────────────────
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  background: #fef8f0;
+  border: 1px solid #e8e4dc;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #9a9a8a;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.detail-item span:last-child {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0d0d0d;
+}
+
+// ── Contacts ──────────────────────────────────────────────────────────────────
+
+.contacts-heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0d0d0d;
+  margin: 16px 0 8px;
+}
+
+.company { color: #9a9a8a; }
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+
+mat-dialog-actions {
+  border-top: 1px solid #e8e4dc;
+  padding-top: 12px !important;
+
+  button[mat-button] {
+    color: #3a3a3a;
+    border-radius: 24px !important;
+  }
+}
+
+.edit-btn {
+  background: #2a7a7a !important;
+  color: #ffffff !important;
+  border-radius: 24px !important;
+  font-weight: 600;
+  padding: 0 20px;
+}

@@ -1,0 +1,146 @@
+<h2 mat-dialog-title class="dialog-title">
+  <span class="title-icon-wrap">
+    <mat-icon>{{ isEdit ? 'edit_calendar' : 'task_alt' }}</mat-icon>
+  </span>
+  {{ isEdit ? 'Edit Event' : 'Add New Event' }}
+</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="form" class="event-form">
+
+    <!-- Core fields -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Title</mat-label>
+      <input matInput formControlName="title" />
+      @if (form.get('title')?.hasError('required')) {
+        <mat-error>Title is required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput formControlName="description" rows="3"></textarea>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Event Date</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="eventDate" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker" />
+      <mat-datepicker #picker />
+    </mat-form-field>
+
+    <!-- Lookups -->
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Event Type</mat-label>
+      <mat-select formControlName="eventTypeId">
+        @for (t of types(); track t.eventTypeId) {
+          <mat-option [value]="t.eventTypeId">{{ t.title }}</mat-option>
+        }
+      </mat-select>
+      @if (form.get('eventTypeId')?.hasError('required')) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Area</mat-label>
+      <mat-select formControlName="areaId">
+        @for (a of areas(); track a.areaId) {
+          <mat-option [value]="a.areaId">{{ a.title }}</mat-option>
+        }
+      </mat-select>
+      @if (form.get('areaId')?.hasError('required')) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="half-width">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="eventStatusId">
+        @for (s of statuses(); track s.eventStatusId) {
+          <mat-option [value]="s.eventStatusId">{{ s.title }}</mat-option>
+        }
+      </mat-select>
+      @if (form.get('eventStatusId')?.hasError('required')) {
+        <mat-error>Required</mat-error>
+      }
+    </mat-form-field>
+
+    @if (isEdit) {
+      <mat-divider class="section-divider" />
+
+      <!-- Contacts section — edit mode only -->
+      <h3 class="section-heading">Contacts</h3>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Search & add contact</mat-label>
+        <input matInput [formControl]="contactSearch" [matAutocomplete]="contactAuto"
+               placeholder="Type a name..." />
+        <mat-autocomplete #contactAuto="matAutocomplete" [displayWith]="displayContact"
+                          (optionSelected)="addContact($event.option.value)">
+          @for (c of filteredContacts(); track c.contactId) {
+            <mat-option [value]="c">
+              {{ c.firstName }} {{ c.lastName }}
+              @if (c.companyName) { <span class="company"> — {{ c.companyName }}</span> }
+            </mat-option>
+          }
+        </mat-autocomplete>
+      </mat-form-field>
+
+      @if (linkedContacts().length) {
+        <mat-chip-set class="chips">
+          @for (c of linkedContacts(); track c.contactId) {
+            <mat-chip (removed)="removeContact(c)">
+              {{ c.firstName }} {{ c.lastName }}
+              <button matChipRemove><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+          }
+        </mat-chip-set>
+      }
+
+      <button mat-stroked-button color="primary" type="button"
+              (click)="toggleNewContact()" class="new-contact-btn">
+        <mat-icon>{{ showNewContact ? 'expand_less' : 'person_add' }}</mat-icon>
+        {{ showNewContact ? 'Cancel new contact' : 'Create new contact' }}
+      </button>
+
+      @if (showNewContact) {
+        <div [formGroup]="newContactForm" class="new-contact-fields">
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>First Name</mat-label>
+            <input matInput formControlName="firstName" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Last Name</mat-label>
+            <input matInput formControlName="lastName" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="half-width">
+            <mat-label>Mobile</mat-label>
+            <input matInput formControlName="mobile" />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Company</mat-label>
+            <input matInput formControlName="companyName" />
+          </mat-form-field>
+          <button mat-flat-button color="accent" type="button"
+                  (click)="saveNewContact()" [disabled]="newContactForm.invalid">
+            <mat-icon>save</mat-icon> Save Contact
+          </button>
+        </div>
+      }
+    }
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-flat-button color="primary" (click)="save()"
+          [disabled]="form.invalid || saving()">
+    {{ saving() ? 'Saving…' : (isEdit ? 'Save Changes' : 'Create Event') }}
+  </button>
+</mat-dialog-actions>

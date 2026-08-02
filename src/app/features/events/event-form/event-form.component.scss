@@ -1,0 +1,173 @@
+// ── Dialog title ──────────────────────────────────────────────────────────────
+
+.dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0d0d0d;
+  padding: 8px 0 4px !important;
+  margin: 0 !important;
+}
+
+.title-icon-wrap {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #2a7a7a, #3d9999);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  mat-icon {
+    color: #ffffff;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+// ── Dialog padding alignment ──────────────────────────────────────────────────
+// Force title and content to share the same left edge.
+
+::ng-deep {
+  .mat-mdc-dialog-title { padding: 16px 24px 8px !important; }
+  .mat-mdc-dialog-content { padding: 0 24px !important; }
+  .mat-mdc-dialog-actions { padding: 12px 24px 16px !important; }
+}
+
+// ── Material form field text overrides ───────────────────────────────────────
+// M3 MDC variables don't inherit from global color — must be set explicitly here.
+
+::ng-deep {
+  .mdc-text-field__input {
+    color: #0d0d0d !important;
+  }
+
+  .mdc-floating-label,
+  .mat-mdc-floating-label {
+    color: #3a3a3a !important;
+  }
+
+  .mat-mdc-select-value-text,
+  .mat-mdc-select-placeholder {
+    color: #0d0d0d !important;
+  }
+
+  .mat-mdc-option .mdc-list-item__primary-text {
+    color: #0d0d0d !important;
+  }
+
+  .mat-mdc-form-field-hint,
+  .mat-mdc-form-field-error {
+    color: #3a3a3a !important;
+  }
+}
+
+// ── Form layout ───────────────────────────────────────────────────────────────
+
+.event-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+  padding-top: 4px;
+}
+
+.full-width  { width: 100%; }
+.half-width  { flex: 1 1 calc(50% - 8px); min-width: 180px; }
+
+// ── Section divider & heading ─────────────────────────────────────────────────
+
+.section-divider {
+  width: 100%;
+  margin: 4px 0 12px !important;
+  border-color: #e8e4dc !important;
+}
+
+.section-heading {
+  width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0d0d0d;
+  margin: 0 0 8px;
+}
+
+// ── Contact chips ─────────────────────────────────────────────────────────────
+
+.chips {
+  width: 100%;
+  margin-bottom: 8px;
+
+  mat-chip {
+    background: #e8f4f4 !important;
+    color: #2a7a7a !important;
+    font-size: 13px;
+    font-weight: 500;
+  }
+}
+
+// ── New contact toggle button ─────────────────────────────────────────────────
+
+.new-contact-btn {
+  width: 100%;
+  margin-bottom: 12px !important;
+  border-color: #e8e4dc !important;
+  color: #2a7a7a !important;
+  border-radius: 24px !important;
+  justify-content: flex-start;
+
+  mat-icon { margin-right: 6px; font-size: 18px; width: 18px; height: 18px; }
+}
+
+// ── Inline new-contact panel ──────────────────────────────────────────────────
+
+.new-contact-fields {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 16px;
+  background: #fef8f0;
+  border: 1px solid #e8e4dc;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 8px;
+
+  mat-form-field { flex: 1 1 calc(50% - 8px); min-width: 180px; }
+  .full-width     { width: 100%; flex: unset; }
+
+  button[mat-flat-button] {
+    background: #e07820 !important;
+    color: #ffffff !important;
+    border-radius: 24px !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 18px;
+    margin-top: 4px;
+
+    mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; }
+  }
+}
+
+// ── Dialog actions ────────────────────────────────────────────────────────────
+
+mat-dialog-actions {
+  border-top: 1px solid #e8e4dc;
+  padding-top: 12px !important;
+
+  button[mat-button] {
+    color: #5a5a5a;
+    border-radius: 24px !important;
+  }
+
+  button[mat-flat-button] {
+    background: #2a7a7a !important;
+    color: #ffffff !important;
+    border-radius: 24px !important;
+    font-weight: 600;
+    padding: 0 20px;
+  }
+
+  button[disabled] { opacity: 0.5; }
+}

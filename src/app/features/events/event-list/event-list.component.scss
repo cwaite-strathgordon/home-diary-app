@@ -1,0 +1,246 @@
+// ── Page shell ────────────────────────────────────────────────────────────────
+
+.page-content {
+  padding: 28px 28px 40px;
+  max-width: 1440px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+// ── Page header ───────────────────────────────────────────────────────────────
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.page-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #0d0d0d;
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: #4a4a4a;
+  margin: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+.filter-toggle-btn {
+  border-color: #e8e4dc !important;
+  color: #3a3a3a !important;
+  border-radius: 24px !important;
+  font-weight: 500;
+  height: 44px;
+  padding: 0 20px;
+
+  mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; }
+}
+
+.new-event-btn {
+  background: #2a7a7a !important;
+  color: #ffffff !important;
+  border-radius: 24px !important;
+  font-weight: 600;
+  height: 44px;
+  padding: 0 20px;
+
+  mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; }
+}
+
+// ── Results bar ───────────────────────────────────────────────────────────────
+
+.results-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -8px;
+  margin-bottom: -8px;
+}
+
+.results-count {
+  font-size: 12px;
+  color: #6a6a6a;
+}
+
+// ── Shared card base ──────────────────────────────────────────────────────────
+
+.filter-card,
+.table-card {
+  border-radius: 14px !important;
+  border: 1px solid #e8e4dc !important;
+  box-shadow: 0 2px 8px rgba(60, 50, 30, 0.07) !important;
+  background: #fffbf7 !important;
+}
+
+// ── Filter card ───────────────────────────────────────────────────────────────
+
+.filter-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-start;
+
+  mat-form-field {
+    flex: 1 1 180px;
+  }
+}
+
+.filter-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+
+  button[mat-flat-button] {
+    background: #2a7a7a !important;
+    color: #ffffff !important;
+    border-radius: 24px !important;
+    font-weight: 600;
+    height: 40px;
+    padding: 0 18px;
+  }
+
+  button[mat-stroked-button] {
+    border-color: #e8e4dc !important;
+    color: #3a3a3a !important;
+    border-radius: 24px !important;
+    height: 40px;
+    padding: 0 18px;
+  }
+}
+
+// ── Table card header ─────────────────────────────────────────────────────────
+
+.table-card {
+  .mat-mdc-card-header {
+    padding: 18px 20px 0 !important;
+    display: flex;
+    align-items: center;
+
+    .mat-mdc-card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin: 0 !important;
+    }
+  }
+
+  .mat-mdc-card-content {
+    padding: 0 !important;
+  }
+}
+
+.spacer { flex: 1; }
+
+.table-card .mat-mdc-card-header button[mat-flat-button] {
+  background: #2a7a7a !important;
+  color: #ffffff !important;
+  border-radius: 24px !important;
+  font-weight: 600;
+  height: 40px;
+  padding: 0 18px;
+
+  mat-icon { margin-right: 4px; font-size: 18px; width: 18px; height: 18px; }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+
+.events-table {
+  width: 100%;
+  background: transparent !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+
+  // Header row
+  .mat-mdc-header-row {
+    background: #fef8f0 !important;
+  }
+
+  .mat-mdc-header-cell {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #4a4a4a;
+    border-bottom: 1px solid #e8e4dc !important;
+
+    &:first-child { border-radius: 14px 0 0 0; }
+    &:last-child  { border-radius: 0 14px 0 0; }
+  }
+
+  // Data rows
+  .mat-mdc-row {
+    border-bottom: 1px solid #f0ece4 !important;
+    transition: background 0.1s;
+
+    &:last-child { border-bottom: none !important; }
+  }
+
+  .clickable-row {
+    cursor: pointer;
+    &:hover { background: #f5f2ed !important; }
+  }
+
+  .mat-mdc-cell {
+    color: #0d0d0d;
+    font-size: 13px;
+    border-bottom: none !important;
+  }
+}
+
+// ── Status badge ──────────────────────────────────────────────────────────────
+
+.status-badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #e8f4f4;
+  color: #2a7a7a;
+}
+
+// ── Action cell ───────────────────────────────────────────────────────────────
+
+.action-cell {
+  white-space: nowrap;
+  text-align: right;
+
+  button[mat-icon-button] { color: #8a8a8a; }
+  button[mat-icon-button][color="warn"] { color: #c0392b; }
+}
+
+// ── No data row ───────────────────────────────────────────────────────────────
+
+.no-data {
+  text-align: center;
+  padding: 40px 20px !important;
+  color: #9a9a8a;
+  font-size: 14px;
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+
+mat-progress-bar {
+  --mdc-linear-progress-active-indicator-color: #2a7a7a;
+  --mdc-linear-progress-track-color: #e0eded;
+}
+
+// ── Paginator ─────────────────────────────────────────────────────────────────
+
+mat-paginator {
+  background: transparent !important;
+  border-top: 1px solid #e8e4dc;
+  color: #3a3a3a;
+}

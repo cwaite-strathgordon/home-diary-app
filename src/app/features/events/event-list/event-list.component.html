@@ -1,0 +1,164 @@
+<div class="page-content">
+
+  <!-- ── Page header ──────────────────────────────────────────── -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Events</h1>
+      <p class="page-subtitle">Manage and track your home events</p>
+    </div>
+    <div class="header-actions">
+      <button mat-stroked-button class="filter-toggle-btn" (click)="toggleFilters()">
+        <mat-icon>{{ showFilters ? 'filter_list_off' : 'filter_list' }}</mat-icon>
+        {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+      </button>
+      <button mat-flat-button class="new-event-btn" (click)="openForm()">
+        <mat-icon>add</mat-icon> New Event
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter card -->
+  @if (showFilters) {
+  <mat-card class="filter-card">
+    <mat-card-content>
+      <form [formGroup]="filterForm" class="filter-form">
+
+        <mat-form-field appearance="outline">
+          <mat-label>Search title</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput formControlName="titleContains" (keyup.enter)="search()" />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Event Type</mat-label>
+          <mat-select formControlName="eventTypeId">
+            <mat-option [value]="null">All</mat-option>
+            @for (t of types(); track t.eventTypeId) {
+              <mat-option [value]="t.eventTypeId">{{ t.title }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Area</mat-label>
+          <mat-select formControlName="areaId">
+            <mat-option [value]="null">All</mat-option>
+            @for (a of areas(); track a.areaId) {
+              <mat-option [value]="a.areaId">{{ a.title }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Status</mat-label>
+          <mat-select formControlName="eventStatusId">
+            <mat-option [value]="null">All</mat-option>
+            @for (s of statuses(); track s.eventStatusId) {
+              <mat-option [value]="s.eventStatusId">{{ s.title }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Date from</mat-label>
+          <input matInput [matDatepicker]="dateFrom" formControlName="eventDateFrom" />
+          <mat-datepicker-toggle matIconSuffix [for]="dateFrom" />
+          <mat-datepicker #dateFrom />
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Date to</mat-label>
+          <input matInput [matDatepicker]="dateTo" formControlName="eventDateTo" />
+          <mat-datepicker-toggle matIconSuffix [for]="dateTo" />
+          <mat-datepicker #dateTo />
+        </mat-form-field>
+
+        <div class="filter-actions">
+          <button mat-flat-button color="primary" type="button" (click)="search()">
+            <mat-icon>filter_list</mat-icon> Apply Filter
+          </button>
+          <button mat-stroked-button type="button" (click)="clearFilters()">
+            <mat-icon>clear</mat-icon> Clear
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+  }
+
+  <div class="results-bar">
+    <span class="results-count">
+      {{ dataSource.data.length }} {{ dataSource.data.length === 1 ? 'event' : 'events' }} found
+    </span>
+  </div>
+
+  <!-- Table card -->
+  <mat-card class="table-card">
+
+
+    @if (loading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    <mat-card-content>
+      <table mat-table [dataSource]="dataSource" matSort class="events-table">
+
+        <ng-container matColumnDef="eventDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+          <td mat-cell *matCellDef="let row">{{ row.eventDate | date:'mediumDate' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="title">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
+          <td mat-cell *matCellDef="let row">{{ row.title }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="areaTitle">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Area</th>
+          <td mat-cell *matCellDef="let row">{{ row.areaTitle ?? '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="eventTypeTitle">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+          <td mat-cell *matCellDef="let row">{{ row.eventTypeTitle ?? '—' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="eventStatusTitle">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-badge">{{ row.eventStatusTitle ?? '—' }}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let row" class="action-cell">
+            <button mat-icon-button (click)="openForm(row); $event.stopPropagation()"
+                    matTooltip="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteEvent(row, $event)"
+                    matTooltip="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            class="clickable-row"
+            (click)="openDetail(row)">
+        </tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
+            No events found. Try adjusting your filters.
+          </td>
+        </tr>
+      </table>
+
+      <mat-paginator [pageSizeOptions]="[15, 30, 50]" showFirstLastButtons />
+    </mat-card-content>
+  </mat-card>
+
+</div>

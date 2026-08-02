@@ -1,0 +1,411 @@
+// ============================================================
+// HOME DIARY — Angular Material M3 Theme
+// Angular Material 17+ (M3 API)
+//
+// HOW TO USE:
+//   Replace the contents of your src/styles.scss with this file,
+//   or @use it from your existing styles.scss like so:
+//     @use 'styles' as *;
+// ============================================================
+
+// 1. Import Angular Material
+@use '@angular/material' as mat;
+
+// 2. Import your chosen font from Google Fonts.
+//    Add this to the <head> of your index.html instead if you prefer:
+//    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Outlined');
+
+// 3. Required once per app — sets up Material's base typography/reset
+@include mat.core();
+
+
+// ============================================================
+// THEME DEFINITION
+// mat.$azure-palette  → closest built-in to our teal #2A7A7A
+// mat.$orange-palette → closest built-in to our orange #E07820
+// We then override the exact brand colours via CSS vars below.
+// ============================================================
+
+$home-diary-theme: mat.define-theme((
+  color: (
+    theme-type: light,
+    primary:   mat.$azure-palette,
+    tertiary:  mat.$orange-palette,
+  ),
+  typography: (
+    brand-family: 'DM Sans',
+    plain-family: 'DM Sans',
+  ),
+  density: (
+    scale: 0,   // 0 = default. Use -1 or -2 for a more compact UI.
+  ),
+));
+
+
+// ============================================================
+// APPLY THEME TO ALL MATERIAL COMPONENTS
+// ============================================================
+
+html {
+  @include mat.all-component-themes($home-diary-theme);
+}
+
+
+// ============================================================
+// BRAND COLOUR OVERRIDES
+// Angular Material M3 exposes --mat-sys-* CSS variables that
+// control every component's colours. Overriding them here
+// replaces the azure/orange palette approximations with the
+// exact Home Diary brand colours from the screenshot.
+// ============================================================
+
+html {
+
+  // --- Primary: Teal ---
+  --mat-sys-primary:              #2A7A7A;
+  --mat-sys-on-primary:           #FFFFFF;
+  --mat-sys-primary-container:    #E8F4F4;   // Light teal — chip backgrounds, selected states
+  --mat-sys-on-primary-container: #1F5F5F;
+
+  // --- Secondary: Auto-generated tonal (keep Material's default) ---
+  // Material M3 generates a secondary from the primary hue automatically.
+  // Override here only if you want manual control:
+  // --mat-sys-secondary:           #4A8A8A;
+  // --mat-sys-on-secondary:        #FFFFFF;
+
+  // --- Tertiary: Orange ---
+  --mat-sys-tertiary:              #E07820;
+  --mat-sys-on-tertiary:           #FFFFFF;
+  --mat-sys-tertiary-container:    #FDF0E0;
+  --mat-sys-on-tertiary-container: #7A3A00;
+
+  // --- Error / Danger ---
+  --mat-sys-error:                 #D93025;
+  --mat-sys-on-error:              #FFFFFF;
+  --mat-sys-error-container:       #FDEAEA;
+  --mat-sys-on-error-container:    #8B0000;
+
+  // --- Surfaces & Background ---
+  --mat-sys-background:            #FAFAF8;   // Warm off-white app background
+  --mat-sys-on-background:         #0d0d0d;
+  --mat-sys-surface:               #FFFFFF;   // Card / sheet surfaces
+  --mat-sys-on-surface:            #0d0d0d;
+  --mat-sys-surface-variant:       #F0ECE4;   // Subtle surface tint
+  --mat-sys-on-surface-variant:    #3a3a3a;
+  --mat-sys-outline:               #E8E4DC;   // Borders, dividers
+  --mat-sys-outline-variant:       #F0ECE4;   // Lighter borders
+
+  // --- Inverse (for snackbars, tooltips) ---
+  --mat-sys-inverse-surface:       #2A2A2A;
+  --mat-sys-inverse-on-surface:    #F5F5F0;
+  --mat-sys-inverse-primary:       #80C8C8;
+
+  // --- Shadow & Scrim ---
+  --mat-sys-shadow:                rgba(60, 50, 30, 0.12);
+  --mat-sys-scrim:                 rgba(0, 0, 0, 0.40);
+
+  // --- App-level background (sets <body> colour) ---
+  --mat-app-background-color:      #FAFAF8;
+}
+
+
+// ============================================================
+// COMPONENT-LEVEL OVERRIDES
+// Fine-tune specific Material components to match the design.
+// ============================================================
+
+// --- Toolbar (top bar) ---
+.mat-toolbar {
+  background-color: #FFFFFF !important;
+  border-bottom: 1px solid #E8E4DC;
+  box-shadow: 0 1px 4px rgba(60, 50, 30, 0.06);
+}
+
+// --- Sidenav (sidebar) ---
+.mat-sidenav {
+  background-color: #FFFFFF !important;
+  border-right: 1px solid #E8E4DC !important;
+  width: 240px;
+
+  // Active nav item
+  .mat-list-item.active,
+  .mat-mdc-list-item.active {
+    background-color: #2A7A7A !important;
+    border-radius: 10px;
+    color: #FFFFFF !important;
+
+    .mat-icon,
+    .material-icons { color: #FFFFFF !important; }
+  }
+
+  // Inactive nav item hover
+  .mat-mdc-list-item:not(.active):hover {
+    background-color: #E8F4F4 !important;
+    border-radius: 10px;
+  }
+}
+
+// --- Cards ---
+.mat-mdc-card {
+  border-radius: 14px !important;
+  border: 1px solid #E8E4DC;
+  box-shadow: 0 2px 8px rgba(60, 50, 30, 0.08) !important;
+
+  &:hover {
+    box-shadow: 0 4px 16px rgba(60, 50, 30, 0.10) !important;
+  }
+}
+
+// --- Buttons ---
+
+// Primary raised button → Teal
+.mat-mdc-raised-button.mat-primary {
+  background-color: #2A7A7A !important;
+  color: #FFFFFF !important;
+  border-radius: 999px !important;
+
+  &:hover { background-color: #1F5F5F !important; }
+}
+
+// Secondary / accent button → Orange
+.mat-mdc-raised-button.mat-accent,
+.mat-mdc-fab.mat-accent {
+  background-color: #E07820 !important;
+  color: #FFFFFF !important;
+  border-radius: 999px !important;
+}
+
+// Stroked / outline buttons
+.mat-mdc-outlined-button {
+  border-radius: 999px !important;
+  border-color: #E8E4DC !important;
+}
+
+// Text / ghost buttons
+.mat-mdc-button {
+  border-radius: 999px !important;
+
+  &.mat-primary { color: #2A7A7A !important; }
+  &.mat-accent  { color: #E07820 !important; }
+}
+
+// FAB (Add New Task button)
+.mat-mdc-extended-fab {
+  background-color: #2A7A7A !important;
+  color: #FFFFFF !important;
+  border-radius: 999px !important;
+}
+
+// --- Form fields (search, inputs) ---
+.mat-mdc-form-field {
+  // Outlined appearance — matches the design
+  &.mat-form-field-appearance-outline {
+    .mdc-notched-outline__leading,
+    .mdc-notched-outline__notch,
+    .mdc-notched-outline__trailing {
+      border-color: #E8E4DC !important;
+    }
+
+    &:hover .mdc-notched-outline {
+      border-color: #2A7A7A !important;
+    }
+
+    &.mat-focused .mdc-notched-outline {
+      border-color: #2A7A7A !important;
+    }
+  }
+}
+
+// --- Chips (priority badges) ---
+.mat-mdc-chip {
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  height: 22px !important;
+
+  &.priority-high {
+    background-color: #FDEAEA !important;
+    color: #E03030 !important;
+  }
+
+  &.priority-medium {
+    background-color: #FDF0E0 !important;
+    color: #E07820 !important;
+  }
+
+  &.priority-low {
+    background-color: #EAF3EA !important;
+    color: #5A8A5A !important;
+  }
+}
+
+// --- Progress bar (Home Health Score) ---
+.mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: #2A7A7A;
+  --mdc-linear-progress-track-color: #E8E4DC;
+  border-radius: 999px !important;
+  height: 8px !important;
+}
+
+// --- Checkboxes (task list) ---
+.mat-mdc-checkbox {
+  --mdc-checkbox-selected-checkmark-color: #FFFFFF;
+  --mdc-checkbox-selected-focus-icon-color: #2A7A7A;
+  --mdc-checkbox-selected-hover-icon-color: #2A7A7A;
+  --mdc-checkbox-selected-icon-color: #2A7A7A;
+  --mdc-checkbox-selected-pressed-icon-color: #1F5F5F;
+  --mdc-checkbox-unselected-icon-color: #C8C4BC;
+  --mdc-checkbox-unselected-hover-icon-color: #2A7A7A;
+}
+
+// --- Badges (notification count) ---
+.mat-badge-content {
+  background-color: #E07820 !important;
+  color: #FFFFFF !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+}
+
+// --- Datepicker / Calendar ---
+.mat-datepicker-content {
+  border-radius: 14px !important;
+  box-shadow: 0 8px 32px rgba(60, 50, 30, 0.12) !important;
+}
+
+.mat-calendar-body-selected {
+  background-color: #2A7A7A !important;
+  color: #FFFFFF !important;
+}
+
+.mat-calendar-body-today:not(.mat-calendar-body-selected) {
+  border-color: #2A7A7A !important;
+}
+
+// --- Dialogs ---
+.mat-mdc-dialog-surface {
+  background: #ffffff !important;
+  border-radius: 16px !important;
+}
+
+// --- Dividers ---
+.mat-divider {
+  border-color: #E8E4DC !important;
+}
+
+// --- Snack bar ---
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-color: #2A2A2A;
+  --mdc-snackbar-supporting-text-color: #F5F5F0;
+  border-radius: 10px !important;
+}
+
+// --- Tooltips ---
+.mat-mdc-tooltip {
+  --mdc-plain-tooltip-container-color: #2A2A2A;
+  --mdc-plain-tooltip-supporting-text-color: #F5F5F0;
+  border-radius: 6px !important;
+  font-size: 12px !important;
+}
+
+// --- Tabs ---
+.mat-mdc-tab-header {
+  border-bottom: 1px solid #E8E4DC;
+}
+
+.mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
+  color: #2A7A7A !important;
+}
+
+.mat-mdc-tab-indicator__content--underline {
+  border-color: #2A7A7A !important;
+}
+
+// --- Select / Dropdown ---
+.mat-mdc-select-panel {
+  border-radius: 10px !important;
+  box-shadow: 0 4px 16px rgba(60, 50, 30, 0.10) !important;
+}
+
+.mat-mdc-option.mdc-list-item--selected:not(.mat-mdc-option-multiple) {
+  color: #2A7A7A !important;
+}
+
+// --- List items ---
+.mat-mdc-list-item {
+  border-radius: 10px !important;
+}
+
+
+// ============================================================
+// PAGE LAYOUT HELPERS
+// ============================================================
+
+.page-content {
+  padding: 24px;
+}
+
+.spacer { flex: 1 1 auto; }
+
+// ============================================================
+// GLOBAL BASE STYLES
+// ============================================================
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #FAFAF8;
+  font-family: 'DM Sans', -apple-system, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0d0d0d;
+  -webkit-font-smoothing: antialiased;
+}
+
+// Scrollbar styling (Webkit)
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #C8C4BC; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #A0A098; }
+
+
+// ============================================================
+// UTILITY CLASSES
+// Use these directly in your Angular templates.
+// ============================================================
+
+// Text colours
+.text-primary    { color: #2A7A7A !important; }
+.text-secondary  { color: #5A5A5A !important; }
+.text-muted      { color: #9A9A8A !important; }
+.text-accent     { color: #E07820 !important; }
+.text-error      { color: #D93025 !important; }
+.text-success    { color: #5A8A5A !important; }
+
+// Background tints
+.bg-primary-light   { background-color: #E8F4F4 !important; }
+.bg-accent-light    { background-color: #FDF0E0 !important; }
+.bg-error-light     { background-color: #FDEAEA !important; }
+.bg-success-light   { background-color: #EAF3EA !important; }
+.bg-surface         { background-color: #FFFFFF !important; }
+
+// Priority badge utility classes (use on mat-chip or a <span>)
+.badge-high   { background-color: #FDEAEA; color: #E03030; }
+.badge-medium { background-color: #FDF0E0; color: #E07820; }
+.badge-low    { background-color: #EAF3EA; color: #5A8A5A; }
+
+// Spacing helpers
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.gap-6 { gap: 24px; }

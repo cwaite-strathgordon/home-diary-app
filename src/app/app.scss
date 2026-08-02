@@ -1,0 +1,206 @@
+// ── Shell layout ──────────────────────────────────────────────────────────────
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+// ── Top toolbar ───────────────────────────────────────────────────────────────
+
+.app-toolbar {
+  flex-shrink: 0;
+  background: #fffbf7 !important;
+  border-bottom: 1px solid #e8e4dc;
+  box-shadow: 0 1px 4px rgba(60, 50, 30, 0.06);
+  height: 64px !important;
+  padding: 0 20px !important;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 100;
+}
+
+.toolbar-logo {
+  width: 160px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.logo-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.toolbar-spacer { flex: 1; }
+
+.toolbar-search {
+  display: flex;
+  align-items: center;
+  background: #f5f3ef;
+  border: 1px solid #e8e4dc;
+  border-radius: 24px;
+  padding: 0 16px;
+  height: 40px;
+  width: 340px;
+  flex-shrink: 0;
+  gap: 8px;
+
+  .search-icon {
+    color: #9a9a8a;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .search-input {
+    background: none;
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: #0d0d0d;
+    width: 100%;
+    &::placeholder { color: #9a9a8a; }
+  }
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.notif-btn { color: #3a3a3a !important; }
+.signout-btn { color: #9a9a8a !important; }
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 24px;
+  transition: background 0.15s;
+
+  &:hover { background: #f0f8f8; }
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #2a7a7a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.user-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+
+  .user-welcome { font-size: 11px; color: #9a9a8a; }
+  .user-name    { font-size: 13px; font-weight: 600; color: #0d0d0d; }
+}
+
+// ── Sidenav ───────────────────────────────────────────────────────────────────
+
+.sidenav-container {
+  flex: 1;
+  overflow: hidden;
+}
+
+.app-sidenav {
+  width: 220px;
+  height: 100% !important;
+  background: #fef8f0 !important;
+  border-right: 1px solid #e8e4dc !important;
+
+  ::ng-deep .mat-drawer-inner-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+.sidenav-spacer {
+  flex: 1;
+}
+
+.nav-list {
+  padding: 8px !important;
+
+  a.mat-mdc-list-item {
+    border-radius: 10px !important;
+    margin-bottom: 2px;
+    color: #3a3a3a;
+    height: 48px !important;
+    transition: background 0.12s, color 0.12s;
+
+    mat-icon { color: #8a8a8a; transition: color 0.12s; }
+
+    &:hover {
+      background: #f0f8f8 !important;
+      color: #2a7a7a;
+      mat-icon { color: #2a7a7a; }
+    }
+
+    // Active state set by routerLinkActive="nav-active"
+    &.nav-active {
+      background: #2a7a7a !important;
+      color: #ffffff !important;
+
+      mat-icon { color: #ffffff !important; }
+      [matListItemTitle] { color: #ffffff !important; }
+    }
+  }
+}
+
+.nav-count-badge {
+  background: #e07820;
+  color: #ffffff;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  min-width: 20px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+// ── Decorative sidenav art ────────────────────────────────────────────────────
+
+.sidenav-art {
+  margin-top: auto;
+  background: #fef8f0;
+  padding-bottom: 0;
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    mix-blend-mode: multiply;
+    vertical-align: bottom;
+  }
+}
+
+// ── Main content area ─────────────────────────────────────────────────────────
+
+.main-content {
+  background: #ffffff;
+  height: 100%;
+  overflow-y: auto;
+}
