@@ -1,0 +1,43 @@
+<main class="login-page">
+  <section class="brand-panel" aria-hidden="true">
+    <div class="brand-copy">
+      <img src="assets/images/title-bar-app-name.png" alt="" />
+      <h1>Everything about your home, beautifully organised.</h1>
+      <p>Keep tasks, maintenance, schedules, and important details together in one calm place.</p>
+    </div>
+    <div class="house-scene">
+      <div class="sun"></div>
+      <div class="cloud cloud-one"></div>
+      <div class="cloud cloud-two"></div>
+      <div class="house">
+        <div class="roof"></div>
+        <div class="chimney"></div>
+        <div class="door"></div>
+        <div class="window left"></div>
+        <div class="window right"></div>
+      </div>
+      <div class="ground"></div>
+    </div>
+  </section>
+
+  <section class="sign-in-panel">
+    <div class="sign-in-card">
+      <div class="mobile-logo"><img src="assets/images/title-bar-app-name.png" alt="HomeDiary" /></div>
+      <span class="welcome-icon"><mat-icon>home</mat-icon></span>
+      <p class="eyebrow">Welcome home</p>
+      <h2>Sign in to HomeDiary</h2>
+      <p class="intro">Access your home dashboard and keep everything running smoothly.</p>
+
+      @if (auth.invitationError()) {
+        <p class="invitation-error"><mat-icon>error_outline</mat-icon>{{ auth.invitationError() }}</p>
+      }
+
+      <button mat-flat-button class="login-button" (click)="login()">
+        <mat-icon>login</mat-icon>
+        Continue to sign in
+      </button>
+
+      <p class="security-note"><mat-icon>verified_user</mat-icon> Secure authentication provided by Auth0</p>
+    </div>
+  </section>
+</main>

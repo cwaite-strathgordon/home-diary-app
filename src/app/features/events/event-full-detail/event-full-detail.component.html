@@ -1,0 +1,231 @@
+<main class="event-page app-page app-page--with-back">
+  @if (loading()) {
+    <div class="page-state"><mat-spinner diameter="38" /><span>Loading task…</span></div>
+  } @else if (errorMessage()) {
+    <div class="page-state error"><mat-icon>error_outline</mat-icon><span>{{ errorMessage() }}</span></div>
+  } @else if (event(); as event) {
+    <div class="event-detail-content" [class.fade-out]="transitionFadeOut()">
+    <div class="app-back-row">
+      <button type="button" class="app-back-link" (click)="goBack()" aria-label="Go back">
+        <mat-icon>arrow_back</mat-icon><span>Back</span>
+      </button>
+      @if (listNavigation(); as navigation) {
+        <nav class="event-sequence-nav" aria-label="Task list navigation">
+          <button type="button" class="sequence-button" [disabled]="!navigation.previousEventId || taskTransitioning()"
+                  (click)="openPreviousEvent()" aria-label="Previous task">
+            <mat-icon>chevron_left</mat-icon><span>Previous</span>
+          </button>
+          <span class="sequence-position" aria-live="polite">Task {{ navigation.index + 1 }} of {{ navigation.total }}</span>
+          <button type="button" class="sequence-button" [disabled]="!navigation.nextEventId || taskTransitioning()"
+                  (click)="openNextEvent()" aria-label="Next task">
+            <span>Next</span><mat-icon>chevron_right</mat-icon>
+          </button>
+        </nav>
+      }
+    </div>
+    <header class="app-page-header">
+      <div class="heading-wrap app-page-heading">
+        <span class="header-icon app-page-icon"><mat-icon>event_note</mat-icon></span>
+        <div class="app-page-copy">
+          <div class="event-title-row">
+            <h1 class="app-page-title">{{ event.title }}</h1>
+          </div>
+          <p class="app-page-subtitle">Task Details</p>
+          <div class="header-meta-row" aria-label="Task details">
+            <div class="header-meta-item">
+              @if (event.projectId && event.projectTitle) {
+                <a class="pill type project-link" [routerLink]="['/projects', event.projectId]">
+                  <span class="pill-title">Project</span><mat-icon>folder</mat-icon>{{ event.projectTitle }}
+                </a>
+              } @else {
+                <strong class="pill type"><span class="pill-title">Project</span><span>Ad-hoc task</span></strong>
+              }
+            </div>
+            <div class="header-meta-item"><strong class="pill status"><span class="pill-title">Status</span><span>{{ event.eventStatusTitle || 'No status' }}</span></strong></div>
+            <div class="header-meta-item"><strong class="pill type"><span class="pill-title">Task type</span><span>{{ event.eventTypeTitle || 'No type' }}</span></strong></div>
+            <div class="header-meta-item"><strong class="pill area"><span class="pill-title">Area</span><span>{{ event.areaTitle || 'No area' }}</span></strong></div>
+            <div class="header-meta-item"><strong class="pill priority" [attr.data-priority]="event.priorityTitle"><span class="pill-title">Priority</span><span>{{ event.priorityTitle || 'No priority' }}</span></strong></div>
+            @if (event.isRecurring) {
+              <div class="header-meta-item"><strong class="pill recurrence"><span class="pill-title">Schedule</span><mat-icon>repeat</mat-icon>{{ recurrenceLabel(event) }}</strong></div>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="header-side">
+        <div class="header-actions app-page-actions">
+          @if (isCompleted()) { <button mat-stroked-button class="reopen-button" (click)="reopenTask()"><mat-icon>replay</mat-icon>Reopen task</button> }
+          @else { <button mat-flat-button class="complete-button" (click)="completeTask()"><mat-icon>task_alt</mat-icon>Complete task</button> }
+          <button mat-flat-button class="edit-button" (click)="edit()"><mat-icon>edit</mat-icon>Edit task</button>
+        </div>
+        <div class="header-date">
+          <span>{{ event.actualCompletionDate ? 'Completed' : 'Target completion' }}</span>
+          <time>{{ (event.actualCompletionDate || event.targetCompletionDate) ? ((event.actualCompletionDate || event.targetCompletionDate) | date:'d MMMM yyyy') : 'No target date' }}</time>
+        </div>
+      </div>
+    </header>
+    <p class="event-description">{{ event.description || 'No description has been added.' }}</p>
+    @if (successMessage()) { <p class="success-message"><mat-icon>check_circle</mat-icon>{{ successMessage() }}</p> }
+
+    <div class="content-grid" [class.all-empty]="!notes().length && !documents().length && !images().length && !contacts().length">
+      <div class="main-column">
+        <mat-card class="content-card notes-card">
+          <mat-card-header><span class="section-icon orange"><mat-icon>sticky_note_2</mat-icon></span><div><mat-card-title>Notes</mat-card-title><mat-card-subtitle>{{ notes().length }} {{ notes().length === 1 ? 'note' : 'notes' }}</mat-card-subtitle></div><span class="card-spacer"></span><button mat-stroked-button class="card-action" (click)="addNote()"><mat-icon>add</mat-icon>Add note</button></mat-card-header>
+          <mat-card-content>
+            @for (note of notes(); track note.noteId) {
+              <article class="note-row">
+                <div class="note-heading"><button type="button" class="note-subject" (click)="editNote(note)" [attr.aria-label]="'Edit note ' + note.subject"><span>{{ note.subject || 'Note' }}</span><mat-icon>edit</mat-icon></button><div class="note-created"><span class="note-created-by">Created by {{ noteCreator(note) }}</span><span class="note-created-date">{{ note.createdDate ? (note.createdDate | date:'dd/MM/yyyy HH:mm') : 'Date unavailable' }}</span></div></div>
+                @if (note.noteText) { <p>{{ note.noteText }}</p> }
+              </article>
+            } @empty {
+              <div class="empty-state"><mat-icon>note_add</mat-icon><span>No notes have been added to this task.</span></div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="content-card documents-card">
+          <mat-card-header class="documents-header">
+            <span class="section-icon document"><mat-icon>folder_open</mat-icon></span>
+            <div><mat-card-title>Documents</mat-card-title><mat-card-subtitle>{{ documents().length }} {{ documents().length === 1 ? 'document' : 'documents' }}</mat-card-subtitle></div>
+            <span class="card-spacer"></span>
+            <input #documentPicker type="file" class="file-input" multiple accept=".pdf,.docx,.txt,.md,.csv" (change)="filesSelected($event)" />
+            <button type="button" class="compact-upload" [class.drag-active]="dragActive()"
+                    (click)="documentPicker.click()" (dragover)="onDragOver($event)"
+                    (dragleave)="onDragLeave($event)" (drop)="onDrop($event)">
+              @if (uploadingDocuments()) { <mat-spinner diameter="19" /><span>Uploading…</span> }
+              @else { <mat-icon>upload_file</mat-icon><span>Drop or choose files</span> }
+            </button>
+          </mat-card-header>
+          <mat-card-content>
+
+            @if (documentError()) { <p class="document-error"><mat-icon>error_outline</mat-icon>{{ documentError() }}</p> }
+
+            <div class="document-list">
+              @for (document of documents(); track document.eventDocumentId) {
+                <article class="document-row">
+                  <span class="file-icon"><mat-icon>{{ fileIcon(document) }}</mat-icon></span>
+                  <div class="document-copy"><button type="button" class="document-name-link" (click)="openDocument(document)">{{ document.fileName }}</button><small>{{ fileSize(document.fileSize) }} · {{ document.createdDate | date:'dd/MM/yyyy' }}</small>@if (document.searchSnippet) { <p class="search-snippet" [innerHTML]="document.searchSnippet"></p> }</div>
+                  <button mat-icon-button (click)="downloadDocument(document)" aria-label="Download document"><mat-icon>download</mat-icon></button>
+                  <button mat-icon-button class="delete-document" (click)="deleteDocument(document)" aria-label="Delete document"><mat-icon>delete</mat-icon></button>
+                </article>
+              } @empty {
+                <div class="empty-state compact"><mat-icon>folder_off</mat-icon><span>No documents have been added.</span></div>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <aside class="side-column">
+        <section class="image-section" aria-labelledby="event-images-title">
+          <div class="image-section-header">
+            <div class="image-heading">
+              <span class="section-icon image"><mat-icon>photo_library</mat-icon></span>
+              <div>
+                <h2 id="event-images-title">Images</h2>
+                <p>{{ images().length }} {{ images().length === 1 ? 'image' : 'images' }}</p>
+              </div>
+            </div>
+            <input #imagePicker type="file" class="file-input" multiple
+                   accept="image/jpeg,image/png,image/gif,image/webp,.jpg,.jpeg,.png,.gif,.webp"
+                   (change)="imageFilesSelected($event)" />
+            <button type="button" class="image-upload-zone" [class.drag-active]="imageDragActive()"
+                    (click)="imagePicker.click()" (dragover)="onImageDragOver($event)"
+                    (dragleave)="onImageDragLeave($event)" (drop)="onImageDrop($event)">
+              @if (uploadingImages()) {
+                <mat-spinner diameter="20" /><span>Uploading…</span>
+              } @else {
+                <mat-icon>add_photo_alternate</mat-icon><span>Add images</span>
+              }
+            </button>
+          </div>
+
+          @if (imageError()) {
+            <p class="image-error"><mat-icon>error_outline</mat-icon>{{ imageError() }}</p>
+          }
+
+          @if (images().length) {
+            <div class="image-thumbnails">
+              @for (image of images(); track image.eventImageId; let index = $index) {
+                <button type="button" class="image-thumbnail" (click)="openImage(index)"
+                        [attr.aria-label]="'Open ' + image.fileName">
+                  <img [src]="image.objectUrl" [alt]="image.fileName" />
+                  <span>{{ image.fileName }}</span>
+                  <mat-icon class="expand-image">fullscreen</mat-icon>
+                </button>
+              }
+            </div>
+          } @else if (!uploadingImages()) {
+            <div class="empty-images"><mat-icon>hide_image</mat-icon><span>No images have been added.</span></div>
+          }
+        </section>
+
+        <mat-card class="content-card contacts-card">
+          <mat-card-header><span class="section-icon"><mat-icon>group</mat-icon></span><div><mat-card-title>Contacts</mat-card-title><mat-card-subtitle>{{ contacts().length }} linked</mat-card-subtitle></div><span class="card-spacer"></span><button mat-icon-button class="icon-action" (click)="addContact()" aria-label="Add contact"><mat-icon>person_add</mat-icon></button></mat-card-header>
+          <mat-card-content>
+            @for (contact of contacts(); track contact.contactId) {
+              <article class="contact-row" (mouseenter)="showContactPreview(contact, $event)" (mouseleave)="hideContactPreview()">
+                <span class="avatar">{{ contactInitials(contact) }}</span>
+                <div><h3><a class="contact-detail-link" [routerLink]="['/contacts', contact.contactId]">{{ contactName(contact) }}</a></h3><p>{{ contact.companyName || contact.email || 'No additional details' }}</p></div>
+              </article>
+            } @empty {
+              <div class="empty-state compact"><mat-icon>person_off</mat-icon><span>No contacts linked.</span></div>
+            }
+          </mat-card-content>
+        </mat-card>
+
+      </aside>
+    </div>
+
+    @if (hoveredContact(); as hovered) {
+      <aside class="contact-preview" [style.left.px]="contactPreviewX()" [style.top.px]="contactPreviewY()">
+        <span class="preview-avatar">{{ contactInitials(hovered) }}</span>
+        <div><strong>{{ contactName(hovered) }}</strong><p>{{ hovered.companyName || 'Personal contact' }}</p><p><mat-icon>mail</mat-icon>{{ hovered.email || 'No email address' }}</p><p><mat-icon>phone</mat-icon>{{ hovered.mobile || 'No mobile number' }}</p></div>
+      </aside>
+    }
+
+    <section class="event-timeline" aria-label="Task timeline">
+      <div class="timeline-scroll">
+        <div class="timeline-track">
+          <span class="timeline-line" aria-hidden="true"><span [style.width.%]="timelineProgress()"></span></span>
+          @for (milestone of timelineMilestones(); track milestone.key) {
+            <article class="timeline-milestone" [class.complete]="milestone.complete" [class.pending]="!milestone.complete">
+              <div class="timeline-annotation">
+                <strong>{{ milestone.label }}</strong>
+                <time>{{ milestone.date ? (milestone.date | date:'dd MMM yyyy') : milestone.emptyText }}</time>
+                @if (milestone.detail) { <small>{{ milestone.detail }}</small> }
+              </div>
+              <span class="timeline-node"><mat-icon>{{ milestone.icon }}</mat-icon></span>
+            </article>
+          }
+        </div>
+      </div>
+    </section>
+
+    @if (selectedImage(); as image) {
+      <div class="image-lightbox" role="dialog" aria-modal="true" aria-label="Task image viewer"
+           (click)="closeImage()">
+        <button mat-icon-button class="lightbox-close" (click)="closeImage()" aria-label="Close image viewer">
+          <mat-icon>close</mat-icon>
+        </button>
+
+        @if (images().length > 1) {
+          <button mat-icon-button class="lightbox-nav previous" (click)="previousImage($event)" aria-label="Previous image">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <button mat-icon-button class="lightbox-nav next" (click)="nextImage($event)" aria-label="Next image">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        }
+
+        <figure class="lightbox-content" (click)="$event.stopPropagation()">
+          <img [src]="image.objectUrl" [alt]="image.fileName" />
+          <figcaption>
+            <div><strong>{{ image.fileName }}</strong><span>{{ (selectedImageIndex() || 0) + 1 }} of {{ images().length }} · {{ fileSize(image.fileSize) }}</span></div>
+            <button mat-icon-button class="delete-image" (click)="deleteImage(image, $event)" aria-label="Delete image"><mat-icon>delete</mat-icon></button>
+          </figcaption>
+        </figure>
+      </div>
+    }
+    </div>
+  }
+</main>

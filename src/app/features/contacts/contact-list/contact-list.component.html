@@ -1,0 +1,67 @@
+<main class="page-content app-page">
+  <header class="app-page-header">
+    <div class="app-page-heading"><span class="app-page-icon"><mat-icon>contacts</mat-icon></span><div class="app-page-copy"><h1 class="app-page-title">Contacts</h1><p class="app-page-subtitle">Manage the people and organisations connected to your home</p></div></div>
+    <div class="header-actions app-page-actions">
+      <button mat-stroked-button class="filter-button" (click)="toggleFilters()"><mat-icon>{{ showFilters ? 'filter_list_off' : 'filter_list' }}</mat-icon>{{ showFilters ? 'Hide Filters' : 'Show Filters' }}</button>
+      <button mat-flat-button class="primary-button" (click)="openForm()"><mat-icon>person_add</mat-icon>New contact</button>
+    </div>
+  </header>
+
+  @if (showFilters) {
+    <mat-card class="filter-card"><mat-card-content>
+      <form [formGroup]="filterForm" class="filter-form">
+        <div class="filter-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Name</mat-label><mat-icon matPrefix>search</mat-icon>
+            <input matInput formControlName="name" />
+            @if (filterForm.get('name')?.value) { <button mat-icon-button matSuffix type="button" class="clear-filter-button" aria-label="Clear name filter" (click)="clearFilter('name')"><mat-icon>close</mat-icon></button> }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Company</mat-label><mat-icon matPrefix>business</mat-icon>
+            <input matInput formControlName="company" />
+            @if (filterForm.get('company')?.value) { <button mat-icon-button matSuffix type="button" class="clear-filter-button" aria-label="Clear company filter" (click)="clearFilter('company')"><mat-icon>close</mat-icon></button> }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Email or mobile</mat-label><mat-icon matPrefix>alternate_email</mat-icon>
+            <input matInput formControlName="emailOrMobile" />
+            @if (filterForm.get('emailOrMobile')?.value) { <button mat-icon-button matSuffix type="button" class="clear-filter-button" aria-label="Clear email or mobile filter" (click)="clearFilter('emailOrMobile')"><mat-icon>close</mat-icon></button> }
+          </mat-form-field>
+        </div>
+        <div class="filter-toolbar">
+          <span>Results update automatically as filters change.</span>
+          <button mat-stroked-button type="button" (click)="clearFilters()"><mat-icon>clear</mat-icon>Reset filters</button>
+        </div>
+      </form>
+    </mat-card-content></mat-card>
+  }
+
+  <div class="results-bar"><span class="results-count">{{ dataSource.filteredData.length }} {{ dataSource.filteredData.length === 1 ? 'contact' : 'contacts' }} found</span></div>
+  <mat-card class="table-card">
+    @if (loading()) { <mat-progress-bar mode="indeterminate" /> }
+    @if (errorMessage()) { <p class="error-message"><mat-icon>error_outline</mat-icon>{{ errorMessage() }}</p> }
+    <mat-card-content>
+      <div class="table-scroll">
+        <table mat-table [dataSource]="dataSource" matSort class="contacts-table">
+          <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef mat-sort-header>Name</th><td mat-cell *matCellDef="let row" class="name-cell"><div class="contact-name-content"><span class="avatar">{{ initials(row) }}</span><div class="contact-name-copy"><strong>{{ contactName(row) }}</strong><small>{{ row.companyName || 'Personal contact' }}</small></div></div></td></ng-container>
+          <ng-container matColumnDef="companyName"><th mat-header-cell *matHeaderCellDef mat-sort-header>Company</th><td mat-cell *matCellDef="let row">{{ row.companyName || '—' }}</td></ng-container>
+          <ng-container matColumnDef="email"><th mat-header-cell *matHeaderCellDef mat-sort-header>Email</th><td mat-cell *matCellDef="let row"><a class="contact-link" [href]="row.email ? 'mailto:' + row.email : null" (click)="$event.stopPropagation()">{{ row.email || '—' }}</a></td></ng-container>
+          <ng-container matColumnDef="mobile"><th mat-header-cell *matHeaderCellDef mat-sort-header>Mobile</th><td mat-cell *matCellDef="let row"><a class="contact-link" [href]="row.mobile ? 'tel:' + row.mobile : null" (click)="$event.stopPropagation()">{{ row.mobile || '—' }}</a></td></ng-container>
+          <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef></th><td mat-cell *matCellDef="let row" class="action-cell"><button mat-icon-button (click)="openDetails(row); $event.stopPropagation()" matTooltip="Open details"><mat-icon>open_in_full</mat-icon></button><button mat-icon-button (click)="openForm(row, $event)" matTooltip="Edit"><mat-icon>edit</mat-icon></button><button mat-icon-button class="delete-button" (click)="deleteContact(row, $event)" matTooltip="Delete"><mat-icon>delete</mat-icon></button></td></ng-container>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns" class="contact-row"
+              (mouseenter)="showPreview(row, $event)" (mouseleave)="hidePreview()"
+              (click)="openDetails(row)"></tr>
+          <tr class="mat-row" *matNoDataRow><td class="mat-cell no-data" [attr.colspan]="displayedColumns.length"><mat-icon>person_search</mat-icon><span>No contacts found. Try adjusting your filters.</span></td></tr>
+        </table>
+      </div>
+      <mat-paginator [pageSizeOptions]="[15, 30, 50]" showFirstLastButtons />
+    </mat-card-content>
+  </mat-card>
+
+  @if (hoveredContact(); as hovered) {
+    <aside class="contact-preview" [style.left.px]="previewX()" [style.top.px]="previewY()">
+      <span class="preview-avatar">{{ initials(hovered) }}</span>
+      <div><strong>{{ contactName(hovered) }}</strong><p>{{ hovered.companyName || 'Personal contact' }}</p><p><mat-icon>mail</mat-icon>{{ hovered.email || 'No email address' }}</p><p><mat-icon>phone</mat-icon>{{ hovered.mobile || 'No mobile number' }}</p></div>
+    </aside>
+  }
+</main>

@@ -1,19 +1,60 @@
-@if (isAuthenticated()) {
+@if (auth.accessDenied()) {
+  <main class="access-denied-page">
+    <div class="access-denied-card">
+      <mat-icon>lock</mat-icon>
+      <h1>Account unavailable</h1>
+      <p>Your HomeDiary account has been disabled. Contact an administrator if you need access restored.</p>
+      <button mat-flat-button (click)="signOut()">Sign out</button>
+    </div>
+  </main>
+} @else if (isAuthenticated() && !auth.userResolved()) {
+  <main class="access-denied-page"><div class="access-denied-card"><mat-icon>home</mat-icon><h1>Preparing HomeDiary</h1><p>Loading your client workspace…</p></div></main>
+} @else if (isAuthenticated() && !auth.currentUser()?.clientId) {
+  <router-outlet />
+} @else if (isAuthenticated()) {
   <div class="app-shell">
 
     <!-- ── Top toolbar ─────────────────────────────────────────── -->
     <mat-toolbar class="app-toolbar">
 
-      <div class="toolbar-logo">
+      <button mat-icon-button class="menu-button" (click)="toggleNavigation()"
+              aria-label="Toggle navigation menu" matTooltip="Menu">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <a class="toolbar-logo" routerLink="/dashboard" aria-label="Go to Dashboard">
         <img src="assets/images/title-bar-app-name.png" alt="HomeDiary" class="logo-img" />
-      </div>
+      </a>
 
       <span class="toolbar-spacer"></span>
 
-      <div class="toolbar-search">
-        <mat-icon class="search-icon">search</mat-icon>
-        <input class="search-input" type="text" placeholder="Search anything…" />
-      </div>
+      @if (!isCompactNavigation() || mobileSearchOpen) {
+        <div class="toolbar-search-shell" [class.mobile-search-overlay]="isCompactNavigation()">
+          <div class="toolbar-search">
+            <mat-icon class="search-icon">search</mat-icon>
+            <input class="search-input" type="search" [formControl]="globalSearchControl"
+                   placeholder="Search tasks, contacts and documents…"
+                   (focus)="searchOpen = true" (keydown.escape)="closeSearch()" />
+            @if (globalSearchControl.value) { <button mat-icon-button class="search-clear" (click)="clearSearch()" aria-label="Clear search"><mat-icon>close</mat-icon></button> }
+            @if (isCompactNavigation()) { <button mat-icon-button class="search-close" (click)="closeSearch()" aria-label="Close search"><mat-icon>arrow_back</mat-icon></button> }
+          </div>
+          @if (searchOpen && globalSearchControl.value.trim().length >= 2) {
+            <section class="global-search-results">
+              @for (result of globalSearchResults(); track result.resultType + '-' + result.objectId) {
+                <button type="button" class="search-result" (click)="openSearchResult(result)">
+                  <span class="result-icon"><mat-icon>{{ resultIcon(result) }}</mat-icon></span>
+                  <span class="result-copy"><strong>{{ result.title }}</strong><small>{{ result.subtitle }}</small>@if (result.searchSnippet) { <span class="result-snippet" [innerHTML]="result.searchSnippet"></span> }</span>
+                  <mat-icon class="result-arrow">chevron_right</mat-icon>
+                </button>
+              } @empty {
+                <div class="no-search-results"><mat-icon>search_off</mat-icon><span>No matching tasks, contacts, notes, or documents.</span></div>
+              }
+            </section>
+          }
+        </div>
+      } @else {
+        <button mat-icon-button class="mobile-search-button" (click)="showSearch()" aria-label="Search"><mat-icon>search</mat-icon></button>
+      }
 
       <span class="toolbar-spacer"></span>
 
@@ -22,56 +63,66 @@
                 matTooltip="Notifications">
           <mat-icon>notifications</mat-icon>
         </button>
-
-        <div class="user-info">
-          <div class="user-avatar">
-            {{ (auth.currentUser()?.firstName || 'A')[0] }}
-          </div>
-          <div class="user-text">
-            <span class="user-welcome">Welcome,</span>
-            <span class="user-name">{{ auth.currentUser()?.firstName || 'Alex' }} &#9662;</span>
-          </div>
-        </div>
-
-        <button mat-icon-button (click)="signOut()" matTooltip="Sign out" class="signout-btn">
-          <mat-icon>logout</mat-icon>
-        </button>
       </div>
     </mat-toolbar>
 
     <!-- ── Sidenav + content ─────────────────────────────────── -->
-    <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav-container class="sidenav-container"
+                           [class.navigation-collapsed]="desktopNavigationCollapsed()">
 
-      <mat-sidenav mode="side" opened class="app-sidenav">
+      <mat-sidenav #drawer class="app-sidenav"
+                   [class.sidenav-collapsed]="desktopNavigationCollapsed()"
+                   [mode]="isCompactNavigation() ? 'over' : 'side'"
+                   [opened]="isCompactNavigation() ? navigationOpen() : true"
+                   (openedChange)="navigationOpen.set($event)"
+                   [autoFocus]="false">
         <mat-nav-list class="nav-list">
 
-          <a mat-list-item routerLink="/dashboard" routerLinkActive="nav-active">
+          <a mat-list-item routerLink="/dashboard" routerLinkActive="nav-active" (click)="closeNavigation(drawer)"
+             matTooltip="Dashboard" [matTooltipDisabled]="!desktopNavigationCollapsed()" matTooltipPosition="right">
             <mat-icon matListItemIcon>home</mat-icon>
             <span matListItemTitle>Dashboard</span>
           </a>
 
-          <a mat-list-item routerLink="/events" routerLinkActive="nav-active">
+          <a mat-list-item routerLink="/events" [queryParams]="{ taskPanel: 'active' }" routerLinkActive="nav-active" (click)="closeNavigation(drawer)"
+             matTooltip="Tasks" [matTooltipDisabled]="!desktopNavigationCollapsed()" matTooltipPosition="right">
             <mat-icon matListItemIcon>task_alt</mat-icon>
             <span matListItemTitle>Tasks</span>
-            <span matListItemMeta class="nav-count-badge">8</span>
+            <span matListItemMeta class="nav-count-badge">{{ activeTaskSummary()?.allActiveTasks ?? 0 }}</span>
           </a>
 
-          <a mat-list-item routerLink="/maintenance" routerLinkActive="nav-active">
+          <a mat-list-item routerLink="/projects" routerLinkActive="nav-active" (click)="closeNavigation(drawer)"
+             matTooltip="Projects" [matTooltipDisabled]="!desktopNavigationCollapsed()" matTooltipPosition="right">
+            <mat-icon matListItemIcon>folder_copy</mat-icon>
+            <span matListItemTitle>Projects</span>
+          </a>
+
+          <a mat-list-item routerLink="/contacts" routerLinkActive="nav-active" (click)="closeNavigation(drawer)"
+             matTooltip="Contacts" [matTooltipDisabled]="!desktopNavigationCollapsed()" matTooltipPosition="right">
+            <mat-icon matListItemIcon>contacts</mat-icon>
+            <span matListItemTitle>Contacts</span>
+          </a>
+
+          <a mat-list-item routerLink="/maintenance" routerLinkActive="nav-active" (click)="closeNavigation(drawer)"
+             matTooltip="Maintenance" [matTooltipDisabled]="!desktopNavigationCollapsed()" matTooltipPosition="right">
             <mat-icon matListItemIcon>handyman</mat-icon>
             <span matListItemTitle>Maintenance</span>
           </a>
 
-          <a mat-list-item routerLink="/calendar" routerLinkActive="nav-active">
+          <a mat-list-item routerLink="/calendar" routerLinkActive="nav-active" (click)="closeNavigation(drawer)"
+             matTooltip="Calendar" [matTooltipDisabled]="!desktopNavigationCollapsed()" matTooltipPosition="right">
             <mat-icon matListItemIcon>calendar_month</mat-icon>
             <span matListItemTitle>Calendar</span>
           </a>
 
-          <a mat-list-item routerLink="/documents" routerLinkActive="nav-active">
+          <a mat-list-item routerLink="/documents" routerLinkActive="nav-active" (click)="closeNavigation(drawer)"
+             matTooltip="Documents" [matTooltipDisabled]="!desktopNavigationCollapsed()" matTooltipPosition="right">
             <mat-icon matListItemIcon>folder_open</mat-icon>
             <span matListItemTitle>Documents</span>
           </a>
 
-          <a mat-list-item routerLink="/settings" routerLinkActive="nav-active">
+          <a mat-list-item routerLink="/settings" routerLinkActive="nav-active" (click)="closeNavigation(drawer)"
+             matTooltip="Settings" [matTooltipDisabled]="!desktopNavigationCollapsed()" matTooltipPosition="right">
             <mat-icon matListItemIcon>settings</mat-icon>
             <span matListItemTitle>Settings</span>
           </a>
@@ -80,10 +131,29 @@
 
         <div class="sidenav-spacer"></div>
 
-        <!-- Decorative illustration -->
-        <div class="sidenav-art">
-          <img src="assets/images/menu-bar-background.png" alt="" />
+        <div class="sidenav-account">
+          <button type="button" class="account-trigger" [matMenuTriggerFor]="accountMenu"
+                  [matTooltip]="fullName()" [matTooltipDisabled]="!desktopNavigationCollapsed()"
+                  matTooltipPosition="right" aria-label="Open account menu">
+            <span class="user-avatar">{{ userInitials() }}</span>
+            <span class="account-copy">
+              <strong>{{ displayName() }}</strong>
+              <small>{{ auth.currentUser()?.email || 'Signed in' }}</small>
+            </span>
+            <mat-icon class="account-chevron">expand_less</mat-icon>
+          </button>
         </div>
+
+        <mat-menu #accountMenu="matMenu" yPosition="above" [overlapTrigger]="false" class="account-menu-panel">
+          <a mat-menu-item routerLink="/profile">
+            <mat-icon>person</mat-icon>
+            <span>My profile</span>
+          </a>
+          <button mat-menu-item (click)="signOut()">
+            <mat-icon>logout</mat-icon>
+            <span>Sign out</span>
+          </button>
+        </mat-menu>
       </mat-sidenav>
 
       <mat-sidenav-content class="main-content">

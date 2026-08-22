@@ -1,0 +1,26 @@
+<main class="property-page app-page app-page--with-back">
+  <header class="app-page-header"><div class="app-page-heading"><span class="app-page-icon"><mat-icon>home_pin</mat-icon></span><div class="app-page-copy"><h1 class="app-page-title">Property</h1><p class="app-page-subtitle">Property name, address and weather location</p></div></div></header>
+  <div class="app-back-row"><button class="app-back-link" (click)="goBack()"><mat-icon>arrow_back</mat-icon>Back</button></div>
+  @if (loading()) { <div class="loading"><mat-spinner diameter="36"/>Loading property details…</div> }
+  @else {
+    <div class="settings-layout">
+      <mat-card class="form-card"><mat-card-header><span class="section-icon"><mat-icon>location_on</mat-icon></span><div><mat-card-title>Property details</mat-card-title><mat-card-subtitle>The address is converted to coordinates when saved</mat-card-subtitle></div></mat-card-header>
+        <mat-card-content><form [formGroup]="form">
+          <mat-form-field appearance="outline" class="full"><mat-label>Property name</mat-label><input matInput formControlName="propertyName" placeholder="e.g. Bevan Court"/><mat-error>Property name is required</mat-error></mat-form-field>
+          <mat-form-field appearance="outline" class="full"><mat-label>Address line 1</mat-label><input matInput formControlName="addressLine1"/><mat-error>Address is required</mat-error></mat-form-field>
+          <mat-form-field appearance="outline" class="full"><mat-label>Address line 2</mat-label><input matInput formControlName="addressLine2"/></mat-form-field>
+          <div class="field-grid"><mat-form-field appearance="outline"><mat-label>Town or city</mat-label><input matInput formControlName="city"/><mat-error>Town or city is required</mat-error></mat-form-field><mat-form-field appearance="outline"><mat-label>County, state or region</mat-label><input matInput formControlName="region"/></mat-form-field><mat-form-field appearance="outline"><mat-label>Postcode</mat-label><input matInput formControlName="postcode"/><mat-error>Postcode is required</mat-error></mat-form-field><mat-form-field appearance="outline"><mat-label>Country</mat-label><input matInput formControlName="country"/><mat-error>Country is required</mat-error></mat-form-field></div>
+          <h3>Property profile</h3>
+          <div class="field-grid"><mat-form-field appearance="outline"><mat-label>Property type</mat-label><mat-select formControlName="propertyType"><mat-option value="House">House</mat-option><mat-option value="Flat">Flat / apartment</mat-option><mat-option value="Bungalow">Bungalow</mat-option><mat-option value="Cottage">Cottage</mat-option><mat-option value="Townhouse">Townhouse</mat-option><mat-option value="Other">Other</mat-option></mat-select></mat-form-field><mat-form-field appearance="outline"><mat-label>Construction year</mat-label><input matInput type="number" formControlName="constructionYear"/></mat-form-field><mat-form-field appearance="outline"><mat-label>Bedrooms</mat-label><input matInput type="number" min="0" formControlName="bedroomCount"/></mat-form-field><mat-form-field appearance="outline"><mat-label>Bathrooms</mat-label><input matInput type="number" min="0" formControlName="bathroomCount"/></mat-form-field></div>
+          <fieldset class="features"><legend>Features</legend><mat-checkbox formControlName="hasGarden">Garden</mat-checkbox><mat-checkbox formControlName="hasGarage">Garage</mat-checkbox><mat-checkbox formControlName="hasAirConditioning">Air conditioning</mat-checkbox><mat-checkbox formControlName="hasGasBoiler">Gas boiler</mat-checkbox><mat-checkbox formControlName="hasSolarPanels">Solar panels</mat-checkbox><mat-checkbox formControlName="hasPool">Pool</mat-checkbox></fieldset>
+          @if(error()){<p class="form-error"><mat-icon>error_outline</mat-icon>{{error()}}</p>}
+          <div class="form-actions"><button mat-flat-button class="save-button" (click)="save()" [disabled]="form.invalid || saving()"><mat-icon>location_searching</mat-icon>{{saving()?'Locating and saving…':'Locate and save property'}}</button></div>
+        </form></mat-card-content>
+      </mat-card>
+      <aside><mat-card class="location-card"><mat-card-header><span class="section-icon green"><mat-icon>my_location</mat-icon></span><div><mat-card-title>Weather location</mat-card-title><mat-card-subtitle>Saved coordinates</mat-card-subtitle></div></mat-card-header><mat-card-content>
+        @if(setting();as current){<dl><div><dt>Latitude</dt><dd>{{current.latitude}}</dd></div><div><dt>Longitude</dt><dd>{{current.longitude}}</dd></div></dl><p class="matched-address">{{current.geocodedAddress}}</p>}@else{<div class="empty-location"><mat-icon>location_off</mat-icon><p>Save the property to find its coordinates.</p></div>}
+        <small class="attribution">Address search © OpenStreetMap contributors</small>
+      </mat-card-content></mat-card></aside>
+    </div>
+  }
+</main>

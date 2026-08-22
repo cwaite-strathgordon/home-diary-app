@@ -14,7 +14,19 @@ export class ContactsService {
     return this.http.get<Contact[]>(this.base);
   }
 
+  getById(id: number): Observable<Contact> {
+    return this.http.get<Contact>(`${this.base}/${id}`);
+  }
+
   create(contact: Partial<Contact>): Observable<Contact> {
     return this.http.post<Contact>(this.base, contact);
+  }
+
+  update(id: number, contact: Contact): Observable<void> {
+    return this.http.put<void>(`${this.base}/${id}`, contact);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/${id}`);
   }
 }

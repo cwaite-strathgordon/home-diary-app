@@ -1,0 +1,60 @@
+<main class="onboarding-page">
+  <header class="welcome">
+    <span class="brand-mark"><mat-icon>home</mat-icon></span>
+    <div><h1>Welcome to HomeDiary</h1><p>Set up your private property workspace. You can change these details later.</p></div>
+    <button mat-button type="button" (click)="auth.logout()"><mat-icon>logout</mat-icon>Sign out</button>
+  </header>
+
+  <mat-card>
+    <mat-stepper linear #stepper>
+      <mat-step [stepControl]="personalForm" label="You and your workspace">
+        <form [formGroup]="personalForm" class="step-form">
+          <div class="section-heading"><mat-icon>person</mat-icon><div><h2>Your details</h2><p>The first user becomes the client administrator.</p></div></div>
+          <div class="grid two">
+            <mat-form-field appearance="outline"><mat-label>First name</mat-label><input matInput formControlName="firstName" autocomplete="given-name" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Last name</mat-label><input matInput formControlName="lastName" autocomplete="family-name" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput type="email" formControlName="email" autocomplete="email" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Phone</mat-label><input matInput type="tel" formControlName="mobileNumber" autocomplete="tel" /></mat-form-field>
+          </div>
+          <mat-form-field appearance="outline" class="wide"><mat-label>Workspace / client name</mat-label><input matInput formControlName="clientName" placeholder="e.g. The Waite family" /><mat-hint>Users and property data in this workspace are isolated from every other client.</mat-hint></mat-form-field>
+          <div class="actions"><button mat-flat-button matStepperNext [disabled]="personalForm.invalid">Continue</button></div>
+        </form>
+      </mat-step>
+
+      <mat-step [stepControl]="propertyForm" label="Property">
+        <form [formGroup]="propertyForm" class="step-form">
+          <div class="section-heading"><mat-icon>home_work</mat-icon><div><h2>Property details</h2><p>These answers tailor the suggested areas and maintenance schedule.</p></div></div>
+          <div class="grid two">
+            <mat-form-field appearance="outline"><mat-label>Property name</mat-label><input matInput formControlName="propertyName" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Property type</mat-label><mat-select formControlName="propertyType"><mat-option value="House">House</mat-option><mat-option value="Flat">Flat / apartment</mat-option><mat-option value="Bungalow">Bungalow</mat-option><mat-option value="Cottage">Cottage</mat-option><mat-option value="Townhouse">Townhouse</mat-option><mat-option value="Other">Other</mat-option></mat-select></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Address line 1</mat-label><input matInput formControlName="addressLine1" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Address line 2</mat-label><input matInput formControlName="addressLine2" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>City / town</mat-label><input matInput formControlName="city" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>County / region</mat-label><input matInput formControlName="region" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Postcode</mat-label><input matInput formControlName="postcode" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Country</mat-label><input matInput formControlName="country" /></mat-form-field>
+            <mat-form-field appearance="outline"><mat-label>Approx. construction year</mat-label><input matInput type="number" formControlName="constructionYear" /></mat-form-field>
+            <div class="grid two compact"><mat-form-field appearance="outline"><mat-label>Bedrooms</mat-label><input matInput type="number" min="0" formControlName="bedroomCount" /></mat-form-field><mat-form-field appearance="outline"><mat-label>Bathrooms</mat-label><input matInput type="number" min="0" formControlName="bathroomCount" /></mat-form-field></div>
+          </div>
+          <fieldset class="features"><legend>Property features</legend><mat-checkbox formControlName="hasGarden">Garden</mat-checkbox><mat-checkbox formControlName="hasGarage">Garage</mat-checkbox><mat-checkbox formControlName="hasAirConditioning">Air conditioning</mat-checkbox><mat-checkbox formControlName="hasGasBoiler">Gas boiler</mat-checkbox><mat-checkbox formControlName="hasSolarPanels">Solar panels</mat-checkbox><mat-checkbox formControlName="hasPool">Pool</mat-checkbox></fieldset>
+          <div class="actions"><button mat-button matStepperPrevious>Back</button><button mat-flat-button type="button" (click)="loadSuggestions(); stepper.next()" [disabled]="propertyForm.invalid">Create suggestions</button></div>
+        </form>
+      </mat-step>
+
+      <mat-step label="Suggestions">
+        <section class="step-form">
+          <div class="section-heading"><mat-icon>auto_awesome</mat-icon><div><h2>Suggested starting point</h2><p>Choose what to create. Suggestions use anonymous templates tailored to your property features.</p></div></div>
+          @if (loadingSuggestions()) { <div class="loading"><mat-spinner diameter="34" />Building suggestions…</div> }
+          @else {
+            <div class="suggestion-columns">
+              <section><h3>Areas</h3>@for (area of areas(); track area.title; let i = $index) { <label class="suggestion"><mat-checkbox [checked]="area.selected" (change)="toggleArea(i, $event.checked)" /><span><strong>{{ area.title }}</strong><small>{{ area.description }}</small></span></label> }</section>
+              <section><h3>Recurring maintenance</h3>@for (task of maintenanceTasks(); track task.title; let i = $index) { <label class="suggestion"><mat-checkbox [checked]="task.selected" (change)="toggleTask(i, $event.checked)" /><span><strong>{{ task.title }}</strong><small>Every {{ task.recurrenceInterval }} {{ task.recurrenceUnit }}{{ task.recurrenceInterval === 1 ? '' : 's' }} · {{ task.suggestedArea }}</small></span></label> }</section>
+            </div>
+          }
+          @if (error()) { <p class="error"><mat-icon>error_outline</mat-icon>{{ error() }}</p> }
+          <div class="actions"><button mat-button matStepperPrevious>Back</button><button mat-flat-button type="button" (click)="complete()" [disabled]="saving() || loadingSuggestions()"><mat-icon>check</mat-icon>{{ saving() ? 'Creating workspace…' : 'Finish setup' }}</button></div>
+        </section>
+      </mat-step>
+    </mat-stepper>
+  </mat-card>
+</main>

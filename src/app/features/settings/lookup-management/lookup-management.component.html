@@ -1,0 +1,92 @@
+<main class="lookup-page app-page app-page--with-back">
+  <header class="app-page-header">
+    <div class="app-page-heading">
+      <span class="app-page-icon app-page-icon--orange"><mat-icon>category</mat-icon></span>
+      <div class="app-page-copy">
+        <h1 class="app-page-title">{{ heading }}</h1>
+        <p class="app-page-subtitle">{{ description }}</p>
+      </div>
+    </div>
+  </header>
+  <div class="app-back-row"><a class="app-back-link" routerLink="/settings"><mat-icon>arrow_back</mat-icon>Back</a></div>
+
+  <div class="management-grid">
+    <mat-card class="editor-card">
+      <mat-card-header>
+        <mat-card-title>{{ editingId === null ? 'Add' : 'Edit' }} {{ singularName }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="save()">
+          <mat-form-field appearance="outline">
+            <mat-label>Title</mat-label>
+            <input matInput formControlName="title" maxlength="255" />
+            @if (form.controls.title.hasError('required')) {
+              <mat-error>Title is required</mat-error>
+            }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" maxlength="500" rows="4"></textarea>
+            <mat-hint align="end">{{ form.controls.description.value.length }}/500</mat-hint>
+          </mat-form-field>
+
+          <div class="form-actions">
+            @if (editingId !== null) {
+              <button mat-button type="button" (click)="cancel()">Cancel</button>
+            }
+            <button mat-flat-button class="save-btn" type="submit" [disabled]="saving">
+              @if (saving) { <mat-spinner diameter="18" /> }
+              @else { <mat-icon>{{ editingId === null ? 'add' : 'save' }}</mat-icon> }
+              {{ editingId === null ? 'Add' : 'Save' }}
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="list-card">
+      <mat-card-header>
+        <mat-card-title>{{ heading }}</mat-card-title>
+        <span class="item-count">{{ rows.length }} {{ rows.length === 1 ? 'item' : 'items' }}</span>
+      </mat-card-header>
+      <mat-card-content>
+        @if (errorMessage) {
+          <div class="message error" role="alert"><mat-icon>error_outline</mat-icon>{{ errorMessage }}</div>
+        }
+        @if (successMessage) {
+          <div class="message success" role="status"><mat-icon>check_circle_outline</mat-icon>{{ successMessage }}</div>
+        }
+
+        @if (loading) {
+          <div class="loading"><mat-spinner diameter="34" /><span>Loading…</span></div>
+        } @else if (rows.length === 0) {
+          <div class="empty-state">
+            <mat-icon>inventory_2</mat-icon>
+            <h2>No {{ heading.toLowerCase() }} yet</h2>
+            <p>Add the first one using the form.</p>
+          </div>
+        } @else {
+          <div class="lookup-list">
+            @for (row of rows; track row.id) {
+              <article class="lookup-row" [class.editing]="editingId === row.id">
+                <div class="row-copy">
+                  <h2>{{ row.title }}</h2>
+                  <p>{{ row.description || 'No description' }}</p>
+                </div>
+                <div class="row-actions">
+                  <button mat-icon-button type="button" (click)="edit(row)" [attr.aria-label]="'Edit ' + row.title">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button class="delete-btn" type="button" (click)="remove(row)" [attr.aria-label]="'Delete ' + row.title">
+                    <mat-icon>delete_outline</mat-icon>
+                  </button>
+                </div>
+              </article>
+            }
+          </div>
+        }
+      </mat-card-content>
+    </mat-card>
+  </div>
+</main>

@@ -1,0 +1,11 @@
+.application-settings-page { max-width: 760px; padding: 28px 32px 48px; }
+.settings-card { background: #fffbf7 !important; border: 1px solid #e8e4dc; border-radius: 14px !important; box-shadow: 0 2px 8px rgba(60,50,30,.07) !important; }
+mat-card-header { padding: 20px 22px 0 !important; mat-card-title { color: #292925; font-size: 17px; font-weight: 650; } }
+mat-card-content { padding: 16px 22px 24px !important; }
+.setting-description { color: #686860; font-size: 13px; line-height: 1.55; margin: 0 0 18px; }
+mat-form-field { max-width: 280px; width: 100%; }
+.form-actions { display: flex; justify-content: flex-end; margin-top: 18px; }
+.save-btn { background: #2a7a7a !important; color: #fff !important; mat-spinner { display: inline-block; margin-right: 7px; --mdc-circular-progress-active-indicator-color: white; } }
+.message { align-items: center; border-radius: 8px; display: flex; font-size: 13px; gap: 8px; margin-bottom: 14px; padding: 10px 12px; mat-icon { font-size: 19px; height: 19px; width: 19px; } &.error { background: #fdeceb; color: #a52d27; } &.success { background: #e9f5ef; color: #28704d; } }
+.loading { align-items: center; color: #77776e; display: flex; gap: 12px; justify-content: center; min-height: 180px; }
+@media (max-width: 650px) { .application-settings-page { padding: 24px 18px 36px; } }

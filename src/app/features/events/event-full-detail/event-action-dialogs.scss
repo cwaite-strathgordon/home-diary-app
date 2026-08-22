@@ -1,0 +1,10 @@
+.dialog-title { align-items: center; display: flex; gap: 13px; padding-bottom: 18px !important; padding-top: 22px !important; }
+.title-icon { align-items: center; background: #e8f4f4; border-radius: 11px; color: #2a7a7a; display: flex; flex: 0 0 44px; height: 44px; justify-content: center; width: 44px; &.orange { background: #fdf0e0; color: #e07820; } mat-icon { font-size: 23px; height: 23px; width: 23px; } }
+.dialog-title h2 { color: #292925; font-size: 19px; line-height: 1.2; margin: 0 0 3px; }.dialog-title p { color: #77776e; font-size: 12px; margin: 0; }
+mat-dialog-content { box-sizing: border-box; max-width: 100%; overflow-x: hidden; padding: 9px 24px 0 !important; }
+form { display: flex; flex-direction: column; } mat-form-field { width: 100%; }
+mat-dialog-actions { border-top: 1px solid #e8e4dc; padding: 12px 24px 16px !important; }
+.action-spacer { flex: 1; }
+.delete-action { color: #a43a32 !important; }
+.primary-action { background: #2a7a7a !important; border-radius: 24px !important; color: white !important; font-weight: 600; }
+.empty-dialog { align-items: center; color: #77776e; display: flex; flex-direction: column; min-height: 120px; justify-content: center; text-align: center; mat-icon { color: #aaa99f; font-size: 34px; height: 34px; width: 34px; } p { max-width: 300px; } }

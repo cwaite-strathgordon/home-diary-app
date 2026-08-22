@@ -1,86 +1,158 @@
-<div class="page-content">
+<div class="page-content app-page">
 
   <!-- ── Page header ──────────────────────────────────────────── -->
-  <div class="page-header">
-    <div>
-      <h1 class="page-title">Events</h1>
-      <p class="page-subtitle">Manage and track your home events</p>
+  <div class="app-page-header">
+    <div class="app-page-heading">
+      <span class="app-page-icon"><mat-icon>event_note</mat-icon></span>
+      <div class="app-page-copy">
+        <h1 class="app-page-title">Tasks</h1>
+        <p class="app-page-subtitle">Manage and track your home tasks</p>
+      </div>
     </div>
-    <div class="header-actions">
+    <div class="header-actions app-page-actions">
       <button mat-stroked-button class="filter-toggle-btn" (click)="toggleFilters()">
         <mat-icon>{{ showFilters ? 'filter_list_off' : 'filter_list' }}</mat-icon>
         {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
       </button>
       <button mat-flat-button class="new-event-btn" (click)="openForm()">
-        <mat-icon>add</mat-icon> New Event
+        <mat-icon>add</mat-icon> Add task
       </button>
     </div>
   </div>
+
+  <section class="task-summary-grid" aria-label="Task summaries">
+    @for (panel of taskPanels; track panel.key) {
+      <button type="button" class="task-summary-panel"
+              [class.selected]="selectedTaskPanel() === panel.key"
+              [attr.data-panel]="panel.key"
+              [attr.aria-pressed]="selectedTaskPanel() === panel.key"
+              (click)="applyTaskPanel(panel.key)">
+        <span class="summary-panel-title">{{ panel.label }}</span>
+        <span class="summary-panel-value">
+          <span class="summary-panel-icon"><mat-icon>{{ panel.icon }}</mat-icon></span>
+          <strong>{{ summaryCount(panel) }}</strong>
+        </span>
+      </button>
+    }
+  </section>
 
   <!-- Filter card -->
   @if (showFilters) {
   <mat-card class="filter-card">
     <mat-card-content>
       <form [formGroup]="filterForm" class="filter-form">
+        <section class="filter-section" aria-label="Basic filters">
+          <div class="basic-filter-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Search title</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input matInput formControlName="titleContains" />
+              @if (filterForm.get('titleContains')?.value) {
+                <button mat-icon-button matSuffix type="button" class="clear-title-btn"
+                        aria-label="Clear title search" (click)="clearTitle()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              }
+            </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Search title</mat-label>
-          <mat-icon matPrefix>search</mat-icon>
-          <input matInput formControlName="titleContains" (keyup.enter)="search()" />
-        </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Area</mat-label>
+              <mat-select formControlName="areaId">
+                <mat-option [value]="null">All areas</mat-option>
+                @for (a of areas(); track a.areaId) {
+                  <mat-option [value]="a.areaId">{{ a.title }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Event Type</mat-label>
-          <mat-select formControlName="eventTypeId">
-            <mat-option [value]="null">All</mat-option>
-            @for (t of types(); track t.eventTypeId) {
-              <mat-option [value]="t.eventTypeId">{{ t.title }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+            <fieldset class="status-filter-panel">
+              <legend>Status</legend>
+              <div class="status-filter-options">
+                @for (s of statuses(); track s.eventStatusId) {
+                  <mat-checkbox [checked]="statusSelected(s.eventStatusId)"
+                                (change)="toggleStatus(s.eventStatusId, $event.checked)">
+                    {{ s.title }}
+                  </mat-checkbox>
+                }
+                <span class="status-filter-divider" aria-hidden="true"></span>
+                <mat-checkbox formControlName="overdue">Overdue only</mat-checkbox>
+              </div>
+            </fieldset>
+          </div>
+        </section>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Area</mat-label>
-          <mat-select formControlName="areaId">
-            <mat-option [value]="null">All</mat-option>
-            @for (a of areas(); track a.areaId) {
-              <mat-option [value]="a.areaId">{{ a.title }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Status</mat-label>
-          <mat-select formControlName="eventStatusId">
-            <mat-option [value]="null">All</mat-option>
-            @for (s of statuses(); track s.eventStatusId) {
-              <mat-option [value]="s.eventStatusId">{{ s.title }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Date from</mat-label>
-          <input matInput [matDatepicker]="dateFrom" formControlName="eventDateFrom" />
-          <mat-datepicker-toggle matIconSuffix [for]="dateFrom" />
-          <mat-datepicker #dateFrom />
-        </mat-form-field>
-
-        <mat-form-field appearance="outline">
-          <mat-label>Date to</mat-label>
-          <input matInput [matDatepicker]="dateTo" formControlName="eventDateTo" />
-          <mat-datepicker-toggle matIconSuffix [for]="dateTo" />
-          <mat-datepicker #dateTo />
-        </mat-form-field>
-
-        <div class="filter-actions">
-          <button mat-flat-button color="primary" type="button" (click)="search()">
-            <mat-icon>filter_list</mat-icon> Apply Filter
+        <div class="filter-toolbar">
+          <button mat-button type="button" class="more-filters-btn"
+                  [attr.aria-expanded]="showMoreFilters"
+                  (click)="toggleMoreFilters()">
+            <mat-icon>{{ showMoreFilters ? 'expand_less' : 'tune' }}</mat-icon>
+            {{ showMoreFilters ? 'Fewer filters' : 'More filters' }}
           </button>
           <button mat-stroked-button type="button" (click)="clearFilters()">
-            <mat-icon>clear</mat-icon> Clear
+            <mat-icon>clear</mat-icon> Reset filters
           </button>
         </div>
+
+        @if (showMoreFilters) {
+          <section class="filter-section advanced-filter-section" aria-labelledby="advanced-filter-heading">
+            <div class="filter-section-heading">
+              <div>
+                <h2 id="advanced-filter-heading">More filters</h2>
+                <p>Narrow results by project, type, priority or dates.</p>
+              </div>
+            </div>
+
+            <div class="advanced-filter-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Task type</mat-label>
+                <mat-select formControlName="eventTypeId">
+                  <mat-option [value]="null">All types</mat-option>
+                  @for (t of types(); track t.eventTypeId) {
+                    <mat-option [value]="t.eventTypeId">{{ t.title }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Project</mat-label>
+                <mat-select formControlName="projectId">
+                  <mat-option [value]="null">All tasks</mat-option>
+                  <mat-option [value]="0">Ad-hoc tasks</mat-option>
+                  @for (project of projects(); track project.projectId) {
+                    <mat-option [value]="project.projectId">{{ project.title }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field appearance="outline">
+                <mat-label>Priority</mat-label>
+                <mat-select formControlName="priorityId">
+                  <mat-option [value]="null">All priorities</mat-option>
+                  @for (priority of priorities(); track priority.eventPriorityId) {
+                    <mat-option [value]="priority.eventPriorityId">{{ priority.title }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+
+              <div class="advanced-check-filter">
+                <mat-checkbox formControlName="excludeWishList">Exclude Wish List</mat-checkbox>
+              </div>
+
+              <div class="advanced-check-filter">
+                <mat-checkbox formControlName="recurringOnly">Recurring only</mat-checkbox>
+              </div>
+
+              <mat-form-field appearance="outline"><mat-label>Start date from</mat-label><input matInput [matDatepicker]="dateFrom" formControlName="eventDateFrom" /><mat-datepicker-toggle matIconSuffix [for]="dateFrom" /><mat-datepicker #dateFrom /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Start date to</mat-label><input matInput [matDatepicker]="dateTo" formControlName="eventDateTo" /><mat-datepicker-toggle matIconSuffix [for]="dateTo" /><mat-datepicker #dateTo /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Target date from</mat-label><input matInput [matDatepicker]="targetFrom" formControlName="targetCompletionDateFrom" /><mat-datepicker-toggle matIconSuffix [for]="targetFrom" /><mat-datepicker #targetFrom /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Target date to</mat-label><input matInput [matDatepicker]="targetTo" formControlName="targetCompletionDateTo" /><mat-datepicker-toggle matIconSuffix [for]="targetTo" /><mat-datepicker #targetTo /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Completed from</mat-label><input matInput [matDatepicker]="completedFrom" formControlName="actualCompletionDateFrom" /><mat-datepicker-toggle matIconSuffix [for]="completedFrom" /><mat-datepicker #completedFrom /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Completed to</mat-label><input matInput [matDatepicker]="completedTo" formControlName="actualCompletionDateTo" /><mat-datepicker-toggle matIconSuffix [for]="completedTo" /><mat-datepicker #completedTo /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Created from</mat-label><input matInput [matDatepicker]="createdFrom" formControlName="createdDateFrom" /><mat-datepicker-toggle matIconSuffix [for]="createdFrom" /><mat-datepicker #createdFrom /></mat-form-field>
+              <mat-form-field appearance="outline"><mat-label>Created to</mat-label><input matInput [matDatepicker]="createdTo" formControlName="createdDateTo" /><mat-datepicker-toggle matIconSuffix [for]="createdTo" /><mat-datepicker #createdTo /></mat-form-field>
+            </div>
+          </section>
+        }
       </form>
     </mat-card-content>
   </mat-card>
@@ -88,7 +160,7 @@
 
   <div class="results-bar">
     <span class="results-count">
-      {{ dataSource.data.length }} {{ dataSource.data.length === 1 ? 'event' : 'events' }} found
+      {{ dataSource.data.length }} {{ dataSource.data.length === 1 ? 'task' : 'tasks' }} found
     </span>
   </div>
 
@@ -104,18 +176,35 @@
       <table mat-table [dataSource]="dataSource" matSort class="events-table">
 
         <ng-container matColumnDef="eventDate">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
-          <td mat-cell *matCellDef="let row">{{ row.eventDate | date:'mediumDate' }}</td>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Start</th>
+          <td mat-cell *matCellDef="let row"><span class="start-date-value">{{ row.eventDate ? (row.eventDate | date:'dd/MMM/yy') : '' }}@if (row.isRecurring) { <mat-icon [matTooltip]="recurrenceLabel(row)">repeat</mat-icon> }</span></td>
         </ng-container>
+
+        <ng-container matColumnDef="targetCompletionDate"><th mat-header-cell *matHeaderCellDef mat-sort-header>Target</th><td mat-cell *matCellDef="let row" [class.overdue-date]="isOverdue(row)">{{ row.targetCompletionDate ? (row.targetCompletionDate | date:'dd/MMM/yy') : '' }}</td></ng-container>
 
         <ng-container matColumnDef="title">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
-          <td mat-cell *matCellDef="let row">{{ row.title }}</td>
+          <td mat-cell *matCellDef="let row" class="event-title-cell">{{ row.title }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="priorityTitle">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Priority</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="priority-badge"
+                  [class.completed-priority]="isCompleted(row)"
+                  [attr.data-priority]="row.priorityTitle">{{ row.priorityTitle ?? '—' }}</span>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="areaTitle">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Area</th>
-          <td mat-cell *matCellDef="let row">{{ row.areaTitle ?? '—' }}</td>
+          <td mat-cell *matCellDef="let row" class="area-cell">
+            @if (row.areaTitle) {
+              <mat-icon class="area-icon" [matTooltip]="row.areaTitle" [attr.aria-label]="row.areaTitle">
+                {{ areaIcon(row.areaTitle) }}
+              </mat-icon>
+            }
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="eventTypeTitle">
@@ -126,18 +215,22 @@
         <ng-container matColumnDef="eventStatusTitle">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
           <td mat-cell *matCellDef="let row">
-            <span class="status-badge">{{ row.eventStatusTitle ?? '—' }}</span>
+            <span class="status-badge" [class.completed-status]="isCompleted(row)">
+              @if (isCompleted(row)) { <mat-icon>check_circle</mat-icon> }
+              {{ row.eventStatusTitle ?? '—' }}
+            </span>
           </td>
         </ng-container>
 
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef></th>
           <td mat-cell *matCellDef="let row" class="action-cell">
-            <button mat-icon-button (click)="openForm(row); $event.stopPropagation()"
-                    matTooltip="Edit">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="deleteEvent(row, $event)"
+            @if (isCompleted(row)) {
+              <button mat-icon-button (click)="reopenTask(row, $event)" matTooltip="Reopen task"><mat-icon>replay</mat-icon></button>
+            } @else {
+              <button mat-icon-button class="complete-action" (click)="completeTask(row, $event)" matTooltip="Complete task"><mat-icon>task_alt</mat-icon></button>
+            }
+            <button mat-icon-button class="delete-action" color="warn" (click)="deleteEvent(row, $event)"
                     matTooltip="Delete">
               <mat-icon>delete</mat-icon>
             </button>
@@ -147,12 +240,14 @@
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"
             class="clickable-row"
-            (click)="openDetail(row)">
+            [class.completed-row]="isCompleted(row)"
+            (mouseenter)="showPreview(row, $event)" (mouseleave)="hidePreview()"
+            (click)="openFullDetail(row)">
         </tr>
 
         <tr class="mat-row" *matNoDataRow>
           <td class="mat-cell no-data" [attr.colspan]="displayedColumns.length">
-            No events found. Try adjusting your filters.
+            No tasks found. Try adjusting your filters.
           </td>
         </tr>
       </table>
@@ -160,5 +255,19 @@
       <mat-paginator [pageSizeOptions]="[15, 30, 50]" showFirstLastButtons />
     </mat-card-content>
   </mat-card>
+
+  @if (hoveredEvent(); as preview) {
+    <aside class="event-hover-preview" [style.left.px]="previewX()" [style.top.px]="previewY()">
+      <div class="preview-heading"><span class="preview-icon"><mat-icon>event_note</mat-icon></span><div><small>Task details</small><h2>{{ preview.title }}</h2></div><span class="priority-badge" [attr.data-priority]="preview.priorityTitle">{{ preview.priorityTitle || 'No priority' }}</span></div>
+      <p class="preview-description">{{ preview.description || 'No description has been added.' }}</p>
+      <div class="preview-grid">
+        <div><span>Status</span><strong>{{ preview.eventStatusTitle || '—' }}</strong></div>
+        <div><span>Area</span><strong>{{ preview.areaTitle || '—' }}</strong></div>
+        <div><span>Type</span><strong>{{ preview.eventTypeTitle || '—' }}</strong></div>
+        <div><span>Start date</span><strong>{{ preview.eventDate ? (preview.eventDate | date:'dd/MMM/yy') : '—' }} @if (preview.isRecurring) { <mat-icon>repeat</mat-icon> }</strong></div>
+        <div><span>Target date</span><strong>{{ preview.targetCompletionDate ? (preview.targetCompletionDate | date:'dd/MMM/yy') : '—' }}</strong></div>
+      </div>
+    </aside>
+  }
 
 </div>

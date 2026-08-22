@@ -1,0 +1,40 @@
+<main class="application-settings-page app-page app-page--with-back">
+  <header class="app-page-header">
+    <div class="app-page-heading">
+      <span class="app-page-icon"><mat-icon>tune</mat-icon></span>
+      <div class="app-page-copy">
+        <h1 class="app-page-title">Application settings</h1>
+        <p class="app-page-subtitle">Configure shared behaviour for everyone using this property.</p>
+      </div>
+    </div>
+  </header>
+  <div class="app-back-row"><a class="app-back-link" routerLink="/settings"><mat-icon>arrow_back</mat-icon>Back</a></div>
+
+  @if (errorMessage) { <div class="message error" role="alert"><mat-icon>error_outline</mat-icon>{{ errorMessage }}</div> }
+  @if (successMessage) { <div class="message success" role="status"><mat-icon>check_circle_outline</mat-icon>{{ successMessage }}</div> }
+
+  @if (loading) {
+    <mat-card class="settings-card"><div class="loading"><mat-spinner diameter="36"/><span>Loading application settings…</span></div></mat-card>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <mat-card class="settings-card">
+        <mat-card-header><mat-card-title>Recent activity</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <p class="setting-description">Choose how many recently viewed tasks, projects, and contacts are retained for each user.</p>
+          <mat-form-field appearance="outline">
+            <mat-label>Items to retain</mat-label>
+            <input matInput type="number" min="1" max="100" step="1" formControlName="recentItemsLimit"/>
+            <mat-hint>Between 1 and 100. The default is 20.</mat-hint>
+            @if (form.controls.recentItemsLimit.invalid) { <mat-error>Enter a value between 1 and 100.</mat-error> }
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+      <div class="form-actions">
+        <button mat-flat-button class="save-btn" type="submit" [disabled]="saving">
+          @if (saving) { <mat-spinner diameter="18"/> } @else { <mat-icon>save</mat-icon> }
+          Save settings
+        </button>
+      </div>
+    </form>
+  }
+</main>

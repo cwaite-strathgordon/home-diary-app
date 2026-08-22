@@ -1,0 +1,96 @@
+<main class="settings-page app-page">
+  <header class="app-page-header">
+    <div class="app-page-heading">
+      <span class="app-page-icon"><mat-icon>settings</mat-icon></span>
+      <div class="app-page-copy">
+        <h1 class="app-page-title">Settings</h1>
+        <p class="app-page-subtitle">Manage the lookup values used throughout HomeDiary.</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="settings-grid" aria-label="Settings options">
+    <a class="settings-link" routerLink="/settings/property">
+      <mat-card class="settings-card"><mat-card-content><span class="icon-wrap teal"><mat-icon>home_pin</mat-icon></span><div class="card-copy"><h2>Property</h2><p>Set the property name and address used for location-based weather.</p></div><mat-icon class="chevron">chevron_right</mat-icon></mat-card-content></mat-card>
+    </a>
+    <a class="settings-link" routerLink="/settings/areas">
+      <mat-card class="settings-card">
+        <mat-card-content>
+          <span class="icon-wrap teal"><mat-icon>location_on</mat-icon></span>
+          <div class="card-copy">
+            <h2>Areas</h2>
+            <p>Create and maintain locations such as Kitchen, Garden, or Garage.</p>
+          </div>
+          <mat-icon class="chevron">chevron_right</mat-icon>
+        </mat-card-content>
+      </mat-card>
+    </a>
+
+    <a class="settings-link" routerLink="/settings/event-types">
+      <mat-card class="settings-card">
+        <mat-card-content>
+          <span class="icon-wrap orange"><mat-icon>category</mat-icon></span>
+          <div class="card-copy">
+            <h2>Task types</h2>
+            <p>Control the categories available when creating a home task.</p>
+          </div>
+          <mat-icon class="chevron">chevron_right</mat-icon>
+        </mat-card-content>
+      </mat-card>
+    </a>
+
+    @if (auth.currentUser()?.admin) {
+      <a class="settings-link" routerLink="/settings/application">
+        <mat-card class="settings-card">
+          <mat-card-content>
+            <span class="icon-wrap orange"><mat-icon>tune</mat-icon></span>
+            <div class="card-copy">
+              <h2>Application</h2>
+              <p>Configure recent activity retention and shared application behaviour.</p>
+            </div>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </mat-card-content>
+        </mat-card>
+      </a>
+
+      <a class="settings-link" routerLink="/settings/ai">
+        <mat-card class="settings-card">
+          <mat-card-content>
+            <span class="icon-wrap teal"><mat-icon>auto_awesome</mat-icon></span>
+            <div class="card-copy">
+              <h2>AI processing</h2>
+              <p>Configure email-triage providers, models, API keys, and parallel comparisons.</p>
+            </div>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </mat-card-content>
+        </mat-card>
+      </a>
+
+      <a class="settings-link" routerLink="/settings/email-triage">
+        <mat-card class="settings-card">
+          <mat-card-content>
+            <span class="icon-wrap orange"><mat-icon>mark_email_unread</mat-icon></span>
+            <div class="card-copy">
+              <h2>Email triage</h2>
+              <p>Review incoming task emails before they are allocated or automated.</p>
+            </div>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </mat-card-content>
+        </mat-card>
+      </a>
+
+      <a class="settings-link" routerLink="/settings/users">
+        <mat-card class="settings-card">
+          <mat-card-content>
+            <span class="icon-wrap teal"><mat-icon>manage_accounts</mat-icon></span>
+            <div class="card-copy">
+              <h2>Users</h2>
+              <p>Manage user profiles, administrator access, and disabled accounts.</p>
+            </div>
+            <mat-icon class="chevron">chevron_right</mat-icon>
+          </mat-card-content>
+        </mat-card>
+      </a>
+    }
+  </section>
+</main>

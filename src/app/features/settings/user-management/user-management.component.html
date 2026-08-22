@@ -1,0 +1,44 @@
+<main class="users-page app-page app-page--with-back">
+  <header class="app-page-header">
+    <div class="app-page-heading"><span class="app-page-icon app-page-icon--purple"><mat-icon>manage_accounts</mat-icon></span><div class="app-page-copy"><h1 class="app-page-title">Users</h1><p class="app-page-subtitle">Manage HomeDiary access and user profile information.</p></div></div>
+  </header>
+  <div class="app-back-row"><a class="app-back-link" routerLink="/settings"><mat-icon>arrow_back</mat-icon>Back</a></div>
+
+  @if (errorMessage) { <div class="message error" role="alert"><mat-icon>error_outline</mat-icon>{{ errorMessage }}</div> }
+  @if (successMessage) { <div class="message success" role="status"><mat-icon>check_circle_outline</mat-icon>{{ successMessage }}</div> }
+
+  <mat-card class="invite-card">
+    <form [formGroup]="inviteForm" (ngSubmit)="invite()">
+      <div><h2>Invite a user</h2><p>Their verified Auth0 email will join only this client workspace.</p></div>
+      <mat-form-field appearance="outline"><mat-label>Email address</mat-label><input matInput type="email" formControlName="email" /></mat-form-field>
+      <mat-checkbox formControlName="admin">Administrator</mat-checkbox>
+      <button mat-flat-button type="submit" [disabled]="inviteForm.invalid || inviting"><mat-icon>send</mat-icon>{{ inviting ? 'Sending…' : 'Send invitation' }}</button>
+    </form>
+    @if (invitations.length) { <div class="invitations"><h3>Invitations</h3>@for (invitation of invitations; track invitation.clientInvitationId) { <div><span><strong>{{ invitation.email }}</strong><small>@if (invitation.acceptedAt) { Accepted } @else if (invitation.sentAt) { Sent {{ invitation.sentAt | date:'medium' }} · expires {{ invitation.expiresAt | date:'mediumDate' }} } @else { Delivery failed · submit the address again to resend }</small>@if (invitation.deliveryError) { <small class="delivery-error">{{ invitation.deliveryError }}</small> }</span>@if (!invitation.acceptedAt) { <button mat-icon-button (click)="revoke(invitation)" aria-label="Revoke invitation"><mat-icon>close</mat-icon></button> }</div> }</div> }
+  </mat-card>
+
+  <mat-card class="users-card">
+    @if (loading) {
+      <div class="loading"><mat-spinner diameter="36" /><span>Loading users…</span></div>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Last login</th><th><span class="sr-only">Actions</span></th></tr></thead>
+          <tbody>
+            @for (user of users; track user.userId) {
+              <tr>
+                <td><div class="user-cell"><span class="avatar">{{ (user.firstName || user.email || '?')[0] }}</span><div><strong>{{ displayName(user) }}</strong><span>{{ user.email || 'No email' }}</span></div></div></td>
+                <td><span class="badge" [class.admin]="user.admin">{{ user.admin ? 'Administrator' : 'User' }}</span></td>
+                <td><span class="badge" [class.disabled]="user.disabled">{{ user.disabled ? 'Disabled' : 'Active' }}</span></td>
+                <td>{{ user.lastLoginAt ? (user.lastLoginAt | date:'medium') : 'Never' }}</td>
+                <td class="action-cell"><button mat-icon-button (click)="edit(user)" [attr.aria-label]="'Edit ' + displayName(user)"><mat-icon>edit</mat-icon></button></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="empty">No users found.</td></tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </mat-card>
+</main>

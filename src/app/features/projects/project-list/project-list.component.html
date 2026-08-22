@@ -1,0 +1,45 @@
+<main class="projects-page app-page">
+  <header class="app-page-header">
+    <div class="app-page-heading"><span class="app-page-icon"><mat-icon>folder_copy</mat-icon></span><div class="app-page-copy"><h1 class="app-page-title">Projects</h1><p class="app-page-subtitle">Group related tasks and monitor their progress</p></div></div>
+    <div class="app-page-actions">
+      <mat-slide-toggle [checked]="includeArchived()" (change)="toggleArchived($event.checked)">Include archived</mat-slide-toggle>
+      <mat-button-toggle-group class="view-toggle" [value]="viewMode()" [hideSingleSelectionIndicator]="true" (change)="viewMode.set($event.value)" aria-label="Project display">
+        <mat-button-toggle value="grid" matTooltip="Grid view" aria-label="Grid view"><mat-icon>grid_view</mat-icon></mat-button-toggle>
+        <mat-button-toggle value="list" matTooltip="List view" aria-label="List view"><mat-icon>view_list</mat-icon></mat-button-toggle>
+      </mat-button-toggle-group>
+      <button mat-flat-button class="primary-button" (click)="open()"><mat-icon>create_new_folder</mat-icon>New project</button>
+    </div>
+  </header>
+  @if (loading()) { <mat-progress-bar mode="indeterminate"/> }
+  <section class="project-grid" [class.list-view]="viewMode() === 'list'">
+    @for (project of projects(); track project.projectId) {
+      <mat-card class="project-card" [class.archived-project]="project.status === 'Archived'" (click)="view(project)" tabindex="0" (keydown.enter)="view(project)">
+        <div class="card-heading">
+          <span class="folder" [matTooltip]="project.areaTitle || 'No area'">
+            <mat-icon>{{ areaIcon(project.areaTitle) }}</mat-icon>
+          </span>
+          <mat-card-title>{{ project.title }}</mat-card-title>
+        </div>
+        <div class="card-toolbar">
+          <span class="project-status" [attr.data-status]="project.status">{{ project.status }}</span>
+          <span class="project-dates">{{ project.startDate ? (project.startDate | date:'dd/MMM/yy') : 'No start date' }} · {{ project.targetCompletionDate ? ('Target ' + (project.targetCompletionDate | date:'dd/MMM/yy')) : 'No target date' }}</span>
+          <span class="spacer"></span>
+          <span class="card-actions">
+            <button mat-icon-button (click)="open(project, $event)" matTooltip="Edit project" aria-label="Edit project"><mat-icon>edit</mat-icon></button>
+            @if (project.status === 'Archived') {
+              <button mat-icon-button class="restore" (click)="restore(project, $event)" matTooltip="Restore project" aria-label="Restore project"><mat-icon>unarchive</mat-icon></button>
+            } @else {
+              <span [matTooltip]="archiveHint(project)"><button mat-icon-button class="archive" [disabled]="!canArchive(project)" (click)="archive(project, $event)" aria-label="Archive project"><mat-icon>archive</mat-icon></button></span>
+            }
+            <button mat-icon-button class="delete" (click)="remove(project, $event)" matTooltip="Delete project" aria-label="Delete project"><mat-icon>delete</mat-icon></button>
+          </span>
+        </div>
+        <mat-card-content>
+          <p>{{ project.description || 'No project description.' }}</p>
+          <div class="progress-block"><div class="progress-label"><span>{{ project.completedTasks || 0 }} of {{ project.totalTasks || 0 }} tasks complete</span><strong>{{ progress(project) }}%</strong></div><div class="progress"><span [style.width.%]="progress(project)"></span></div></div>
+          <div class="counts"><span><strong>{{ project.activeTasks || 0 }}</strong> Active</span><span [class.alert]="project.overdueTasks"><strong>{{ project.overdueTasks || 0 }}</strong> Overdue</span></div>
+        </mat-card-content>
+      </mat-card>
+    } @empty { @if (!loading()) { <div class="empty"><mat-icon>create_new_folder</mat-icon><h2>No projects yet</h2><p>Create a project to group related tasks. Existing tasks remain available as ad-hoc tasks.</p><button mat-flat-button class="primary-button" (click)="open()">Create first project</button></div> } }
+  </section>
+</main>

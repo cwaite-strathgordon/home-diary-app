@@ -1,0 +1,44 @@
+<div mat-dialog-title class="dialog-title">
+  <span class="title-icon"><mat-icon>{{ isEdit ? 'edit_note' : 'create_new_folder' }}</mat-icon></span>
+  <div><h2>{{ isEdit ? 'Edit project' : 'New project' }}</h2><p>Group related tasks and track their progress</p></div>
+</div>
+<mat-dialog-content>
+  <form [formGroup]="form" class="project-form">
+    <mat-form-field appearance="outline"><mat-label>Project title</mat-label><input matInput formControlName="title" /><mat-error>Title is required</mat-error></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Description</mat-label><textarea matInput rows="4" formControlName="description"></textarea></mat-form-field>
+    <div class="field-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Area</mat-label>
+        <mat-select formControlName="areaId">
+          <mat-option [value]="null">No area</mat-option>
+          @for (area of areas(); track area.areaId) {
+            <mat-option [value]="area.areaId">{{ area.title }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @if (isArchived) { <mat-option value="Archived">Archived</mat-option> }
+          @for (status of statusOptions; track status) { <mat-option [value]="status">{{ status }}</mat-option> }
+        </mat-select>
+        @if (isArchived) { <mat-hint>Use Restore project to make this project active again.</mat-hint> }
+      </mat-form-field>
+    </div>
+    <div class="date-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Start date</mat-label>
+        <input matInput [matDatepicker]="start" formControlName="startDate" (click)="start.open()" />
+        <mat-datepicker-toggle matIconSuffix [for]="start"></mat-datepicker-toggle>
+        <mat-datepicker #start></mat-datepicker>
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Target date</mat-label>
+        <input matInput [matDatepicker]="target" formControlName="targetCompletionDate" (click)="target.open()" />
+        <mat-datepicker-toggle matIconSuffix [for]="target"></mat-datepicker-toggle>
+        <mat-datepicker #target></mat-datepicker>
+      </mat-form-field>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions align="end"><button mat-button mat-dialog-close>Cancel</button><button mat-flat-button class="save-button" (click)="save()" [disabled]="form.invalid || saving()"><mat-icon>save</mat-icon>{{ saving() ? 'Saving…' : 'Save project' }}</button></mat-dialog-actions>

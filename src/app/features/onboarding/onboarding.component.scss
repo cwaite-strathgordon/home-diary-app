@@ -1,0 +1,23 @@
+:host { background: #f7f3ea; display: block; min-height: 100vh; }
+.onboarding-page { box-sizing: border-box; margin: 0 auto; max-width: 1100px; padding: 34px 22px 60px; }
+.welcome { align-items: center; display: flex; gap: 15px; margin-bottom: 24px; }
+.welcome h1 { color: #25231f; font-size: 30px; margin: 0 0 4px; }
+.welcome p { color: #686259; margin: 0; }
+.welcome button { margin-left: auto; }
+.brand-mark, .section-heading > mat-icon { align-items: center; background: #2a7a7a; border-radius: 13px; color: white; display: flex; height: 48px; justify-content: center; width: 48px; }
+mat-card { background: #fff !important; border: 1px solid #cfc5b5 !important; border-radius: 14px !important; overflow: hidden; }
+.step-form { min-height: 430px; padding: 28px 10px 12px; }
+.section-heading { align-items: center; display: flex; gap: 13px; margin-bottom: 24px; }
+.section-heading > mat-icon { background: #f2ead5; color: #735f31; height: 42px; width: 42px; }
+.section-heading h2 { color: #27241f; margin: 0 0 3px; }
+.section-heading p { color: #746d63; margin: 0; }
+.grid { display: grid; gap: 5px 16px; }.grid.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }.grid.compact { gap: 8px; }
+.wide { width: 100%; }
+.features { border: 1px solid #cfc5b5; border-radius: 10px; display: grid; gap: 8px 18px; grid-template-columns: repeat(3, 1fr); margin: 2px 0 18px; padding: 15px 18px; }
+.features legend { color: #4b463f; font-weight: 700; padding: 0 6px; }
+.actions { align-items: center; display: flex; gap: 10px; justify-content: flex-end; margin-top: 22px; }.actions button[mat-flat-button] { background: #2a7a7a; color: white; }
+.suggestion-columns { display: grid; gap: 22px; grid-template-columns: 1fr 1fr; }.suggestion-columns h3 { color: #3d3932; margin: 0 0 10px; }
+.suggestion { align-items: flex-start; border: 1px solid #d2c9ba; border-radius: 9px; display: flex; margin-bottom: 8px; padding: 10px; }
+.suggestion span { display: flex; flex-direction: column; padding-top: 4px; }.suggestion strong { color: #27241f; font-size: 14px; }.suggestion small { color: #746d63; line-height: 1.4; margin-top: 2px; }
+.loading { align-items: center; color: #686259; display: flex; gap: 12px; justify-content: center; min-height: 250px; }.error { align-items: center; background: #fff0ee; border-radius: 8px; color: #96362f; display: flex; gap: 7px; padding: 10px; }
+@media (max-width: 720px) { .grid.two, .suggestion-columns { grid-template-columns: 1fr; }.features { grid-template-columns: 1fr 1fr; }.welcome { align-items: flex-start; }.welcome button { min-width: 42px; }.step-form { padding-inline: 0; } }

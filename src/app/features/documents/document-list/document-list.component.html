@@ -1,0 +1,72 @@
+<main class="documents-page app-page">
+  <header class="app-page-header">
+    <div class="app-page-heading"><span class="app-page-icon"><mat-icon>folder_open</mat-icon></span><div class="app-page-copy"><h1 class="app-page-title">Documents</h1><p class="app-page-subtitle">Browse and search files stored against your tasks</p></div></div>
+  </header>
+
+  <section class="document-controls">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Search document names and contents</mat-label><mat-icon matPrefix>search</mat-icon>
+      <input matInput [formControl]="searchControl" placeholder="e.g. warranty, invoice or boiler" />
+      @if (searchControl.value) { <button mat-icon-button matSuffix (click)="searchControl.setValue('')" aria-label="Clear search"><mat-icon>close</mat-icon></button> }
+    </mat-form-field>
+    <mat-slide-toggle [checked]="flatView()" (change)="setFlatView($event.checked)">List all documents</mat-slide-toggle>
+  </section>
+
+  <div class="list-summary"><strong>{{ documents().length }}</strong> matching {{ documents().length === 1 ? 'document' : 'documents' }}<span>{{ flatView() ? 'Flat list' : 'Grouped by project and task' }}</span></div>
+  @if (loading()) { <mat-progress-bar mode="indeterminate"/> }
+  @if (error()) { <p class="error"><mat-icon>error_outline</mat-icon>{{ error() }}</p> }
+
+  <section class="tree-table" aria-label="Documents">
+    <div class="table-header">
+      <button class="name-column" (click)="setSort('name')">Name<mat-icon>{{ sortIcon('name') }}</mat-icon></button>
+      <button class="location-column" (click)="setSort('location')">Location<mat-icon>{{ sortIcon('location') }}</mat-icon></button>
+      <button class="date-column" (click)="setSort('date')">Date added<mat-icon>{{ sortIcon('date') }}</mat-icon></button>
+      <button class="size-column" (click)="setSort('size')">Size<mat-icon>{{ sortIcon('size') }}</mat-icon></button>
+      <span class="action-column">Open</span>
+    </div>
+
+    @if (flatView()) {
+      @for (document of sortedDocuments(); track document.eventDocumentId) {
+        <ng-container *ngTemplateOutlet="documentRow; context: {$implicit: document, depth: 0}"></ng-container>
+      } @empty { <div class="empty"><mat-icon>search_off</mat-icon><p>No documents match your search.</p></div> }
+    } @else {
+      @for (node of rootNodes(); track node.key) {
+        @if (node.kind === 'project') {
+          <button class="tree-row group-row" (click)="toggleProject(node.project.projectId)" [attr.aria-expanded]="isProjectExpanded(node.project.projectId)">
+            <span class="name-column tree-name depth-0"><mat-icon class="expand-icon">{{ isProjectExpanded(node.project.projectId) ? 'expand_more' : 'chevron_right' }}</mat-icon><span class="row-icon project"><mat-icon>{{ isProjectExpanded(node.project.projectId) ? 'folder_open' : 'folder' }}</mat-icon></span><span><strong>{{ node.project.title }}</strong><small>{{ node.project.taskCount }} {{ node.project.taskCount===1?'task':'tasks' }} · {{ node.project.documentCount }} {{ node.project.documentCount===1?'document':'documents' }}</small></span></span>
+            <span class="location-column">Project</span><span class="date-column">{{ node.project.latestDate | date:'dd/MMM/yy' }}</span><span class="size-column">{{ fileSize(node.project.totalSize) }}</span><span class="action-column"></span>
+          </button>
+          @if (isProjectExpanded(node.project.projectId)) {
+            @for (task of projectTasks(node.project.projectId); track task.eventId) {
+              <ng-container *ngTemplateOutlet="taskRow; context: {$implicit: task, depth: 1}"></ng-container>
+            }
+          }
+        } @else {
+          <ng-container *ngTemplateOutlet="taskRow; context: {$implicit: node.task, depth: 0}"></ng-container>
+        }
+      }
+      @if (!loading() && !rootNodes().length) { <div class="empty"><mat-icon>folder_off</mat-icon><p>No document-bearing projects or tasks were found.</p></div> }
+    }
+  </section>
+
+  <ng-template #taskRow let-task let-depth="depth">
+    <button class="tree-row task-row" (click)="toggleTask(task.eventId)" [attr.aria-expanded]="isTaskExpanded(task.eventId)">
+      <span class="name-column tree-name" [class.depth-0]="depth===0" [class.depth-1]="depth===1"><mat-icon class="expand-icon">{{ isTaskExpanded(task.eventId) ? 'expand_more' : 'chevron_right' }}</mat-icon><span class="row-icon task"><mat-icon>task_alt</mat-icon></span><span><strong>{{ task.title }}</strong><small>{{ task.documentCount }} {{ task.documentCount===1?'document':'documents' }}</small></span></span>
+      <span class="location-column">{{ task.projectTitle || 'Ad-hoc task' }}</span><span class="date-column">{{ task.latestDate | date:'dd/MMM/yy' }}</span><span class="size-column">{{ fileSize(task.totalSize) }}</span><span class="action-column"></span>
+    </button>
+    @if (isTaskExpanded(task.eventId)) {
+      @for (document of taskDocuments(task.eventId); track document.eventDocumentId) {
+        <ng-container *ngTemplateOutlet="documentRow; context: {$implicit: document, depth: depth + 1}"></ng-container>
+      }
+    }
+  </ng-template>
+
+  <ng-template #documentRow let-document let-depth="depth">
+    <article class="tree-row document-row">
+      <span class="name-column tree-name" [class.depth-0]="depth===0" [class.depth-1]="depth===1" [class.depth-2]="depth===2"><span class="expand-spacer"></span><span class="row-icon file"><mat-icon>{{ fileIcon(document) }}</mat-icon></span><span class="document-copy"><button class="document-link" (click)="openDocument(document)">{{ document.fileName }}</button>@if(document.searchSnippet){<small class="snippet" [innerHTML]="document.searchSnippet"></small>}</span></span>
+      <span class="location-column"><a [routerLink]="['/events', document.eventId]">{{ document.eventTitle }}</a>@if(flatView() && document.projectTitle){<small>{{ document.projectTitle }}</small>}</span>
+      <span class="date-column">{{ document.createdDate | date:'dd/MMM/yy' }}</span><span class="size-column">{{ fileSize(document.fileSize) }}</span>
+      <span class="action-column"><button mat-icon-button (click)="openDocument(document)" aria-label="Open document"><mat-icon>open_in_new</mat-icon></button></span>
+    </article>
+  </ng-template>
+</main>

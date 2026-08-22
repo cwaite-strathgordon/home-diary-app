@@ -1,64 +1,72 @@
-<h2 mat-dialog-title class="dialog-title">
-  <span class="title-icon-wrap">
-    <mat-icon>assignment</mat-icon>
-  </span>
-  {{ event.title }}
-</h2>
+<div mat-dialog-title class="dialog-title">
+  <span class="title-icon"><mat-icon>event_note</mat-icon></span>
+  <div class="title-copy">
+    <h2>{{ event.title }}</h2>
+    <p>Task details and linked contacts</p>
+  </div>
+  <button mat-icon-button class="expand-button" (click)="expand()"
+          matTooltip="Open full task details" aria-label="Open full task details">
+    <mat-icon>open_in_full</mat-icon>
+  </button>
+</div>
 
 <mat-dialog-content class="detail-content">
 
-  <div class="meta-row">
-    <span class="chip status">{{ event.eventStatusTitle ?? 'No status' }}</span>
-    <span class="chip type">{{ event.eventTypeTitle ?? 'No type' }}</span>
-    <span class="chip area">{{ event.areaTitle ?? 'No area' }}</span>
+  <div class="summary-panel">
+    <div class="summary-item">
+      <span>Status</span>
+      <strong class="summary-value status">{{ event.eventStatusTitle ?? 'No status' }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Task type</span>
+      <strong class="summary-value type">{{ event.eventTypeTitle ?? 'No type' }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Area</span>
+      <strong class="summary-value area">{{ event.areaTitle ?? 'No area' }}</strong>
+    </div>
+    <div class="summary-item">
+      <span>Priority</span>
+      <strong class="summary-value priority" [attr.data-priority]="event.priorityTitle">{{ event.priorityTitle ?? 'No priority' }}</strong>
+    </div>
   </div>
 
   @if (event.description) {
-    <p class="description">{{ event.description }}</p>
+    <section class="description-panel">
+      <span class="section-label">Description</span>
+      <p>{{ event.description }}</p>
+    </section>
   }
-
-  <mat-divider />
 
   <div class="detail-grid">
     <div class="detail-item">
-      <span class="label">Event Date</span>
-      <span>{{ event.eventDate ? (event.eventDate | date:'dd/MM/yyyy') : '—' }}</span>
+      <span class="label">Start date</span>
+      <span>{{ event.eventDate ? (event.eventDate | date:'dd/MMM/yy') : '—' }}</span>
     </div>
+    <div class="detail-item"><span class="label">Target completion</span><span>{{ event.targetCompletionDate ? (event.targetCompletionDate | date:'dd/MMM/yy') : '—' }}</span></div>
+    <div class="detail-item"><span class="label">Actual completion</span><span>{{ event.actualCompletionDate ? (event.actualCompletionDate | date:'dd/MMM/yy') : '—' }}</span></div>
+    <div class="detail-item"><span class="label">Recurrence</span><span>{{ recurrenceLabel() }}</span></div>
     <div class="detail-item">
       <span class="label">Created By</span>
       <span>{{ event.createdByFirstName }} {{ event.createdByLastName }}</span>
     </div>
     <div class="detail-item">
       <span class="label">Created</span>
-      <span>{{ event.createdDate ? (event.createdDate | date:'dd/MM/yyyy') : '—' }}</span>
+      <span>{{ event.createdDate ? (event.createdDate | date:'dd/MMM/yy') : '—' }}</span>
     </div>
     <div class="detail-item">
       <span class="label">Last Updated</span>
-      <span>{{ event.updatedDate ? (event.updatedDate | date:'dd/MM/yyyy') : '—' }}</span>
+      <span>{{ event.updatedDate ? (event.updatedDate | date:'dd/MMM/yy') : '—' }}</span>
     </div>
   </div>
 
-  @if (contacts().length) {
-    <mat-divider />
-    <h3 class="contacts-heading">Contacts</h3>
-    <mat-chip-set>
-      @for (c of contacts(); track c.contactId) {
-        <mat-chip>
-          <mat-icon matChipAvatar>person</mat-icon>
-          {{ c.firstName }} {{ c.lastName }}
-          @if (c.companyName) {
-            <span class="company">&nbsp;({{ c.companyName }})</span>
-          }
-        </mat-chip>
-      }
-    </mat-chip-set>
-  }
+  <section class="related-summary">
+    <div><span class="related-icon"><mat-icon>group</mat-icon></span><div><strong>{{ contactCount() }}</strong><span>Contacts</span></div></div>
+    <div><span class="related-icon notes"><mat-icon>sticky_note_2</mat-icon></span><div><strong>{{ noteCount() }}</strong><span>Notes</span></div></div>
+  </section>
 
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">
   <button mat-button (click)="close()">Close</button>
-  <button mat-flat-button class="edit-btn" (click)="edit()">
-    <mat-icon>edit</mat-icon> Edit
-  </button>
 </mat-dialog-actions>

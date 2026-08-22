@@ -1,0 +1,77 @@
+<main class="contact-page app-page app-page--with-back">
+  @if (loading()) {
+    <div class="page-state"><mat-spinner diameter="38" /><span>Loading contact…</span></div>
+  } @else if (errorMessage() && !contact()) {
+    <div class="page-state error"><mat-icon>error_outline</mat-icon><span>{{ errorMessage() }}</span></div>
+  } @else if (contact(); as contact) {
+    <div class="contact-detail-content" [class.fade-out]="transitionFadeOut()">
+    <div class="app-back-row">
+      <button type="button" class="app-back-link" (click)="goBack()" aria-label="Go back"><mat-icon>arrow_back</mat-icon><span>Back</span></button>
+      @if (listNavigation(); as navigation) {
+        <nav class="contact-sequence-nav" aria-label="Contact list navigation">
+          <button type="button" class="sequence-button" [disabled]="!navigation.previousContactId || contactTransitioning()"
+                  (click)="openPreviousContact()" aria-label="Previous contact">
+            <mat-icon>chevron_left</mat-icon><span>Previous</span>
+          </button>
+          <span class="sequence-position" aria-live="polite">Contact {{ navigation.index + 1 }} of {{ navigation.total }}</span>
+          <button type="button" class="sequence-button" [disabled]="!navigation.nextContactId || contactTransitioning()"
+                  (click)="openNextContact()" aria-label="Next contact">
+            <span>Next</span><mat-icon>chevron_right</mat-icon>
+          </button>
+        </nav>
+      }
+    </div>
+    <header class="app-page-header">
+      <div class="heading-wrap app-page-heading"><span class="header-avatar app-page-icon">{{ initials(contact) }}</span><div class="app-page-copy"><h1 class="app-page-title">{{ name(contact) }}</h1><p class="app-page-subtitle">{{ contact.companyName || 'Personal contact' }}</p></div></div>
+      <div class="header-actions app-page-actions"><button mat-stroked-button class="delete-button" (click)="deleteContact()"><mat-icon>delete</mat-icon>Delete</button><button mat-flat-button class="edit-button" (click)="edit()"><mat-icon>edit</mat-icon>Edit contact</button></div>
+    </header>
+    @if (errorMessage()) { <p class="inline-error"><mat-icon>error_outline</mat-icon>{{ errorMessage() }}</p> }
+
+    <div class="content-grid">
+      <mat-card class="content-card profile-card">
+        <mat-card-content>
+          <dl class="details-list">
+            <div><dt><mat-icon>business</mat-icon>Company</dt><dd>{{ contact.companyName || '—' }}</dd></div>
+            <div><dt><mat-icon>mail</mat-icon>Email</dt><dd>@if (contact.email) { <a [href]="'mailto:' + contact.email">{{ contact.email }}</a> } @else { — }</dd></div>
+            <div><dt><mat-icon>phone</mat-icon>Mobile</dt><dd>@if (contact.mobile) { <a [href]="'tel:' + contact.mobile">{{ contact.mobile }}</a> } @else { — }</dd></div>
+          </dl>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="content-card notes-card">
+        <mat-card-header>
+          <span class="section-icon orange"><mat-icon>sticky_note_2</mat-icon></span>
+          <div><mat-card-title>Notes</mat-card-title><mat-card-subtitle>{{ notes().length }} {{ notes().length === 1 ? 'note' : 'notes' }}</mat-card-subtitle></div>
+          <span class="card-spacer"></span>
+          <button mat-stroked-button class="card-action" (click)="addNote()"><mat-icon>add</mat-icon>Add note</button>
+        </mat-card-header>
+        <mat-card-content>
+          @for (note of notes(); track note.noteId) {
+            <article class="note-row">
+              <div class="note-heading"><button type="button" class="note-subject" (click)="editNote(note)" [attr.aria-label]="'Edit note ' + note.subject"><span>{{ note.subject || 'Note' }}</span><mat-icon>edit</mat-icon></button><div class="note-created"><span class="note-created-by">Created by {{ noteCreator(note) }}</span><span class="note-created-date">{{ note.createdDate ? (note.createdDate | date:'dd/MM/yyyy HH:mm') : 'Date unavailable' }}</span></div></div>
+              @if (note.noteText) { <p>{{ note.noteText }}</p> }
+            </article>
+          } @empty {
+            <div class="empty-state note-empty"><mat-icon>note_add</mat-icon><strong>No notes yet</strong><span>Add useful information about this contact.</span></div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="content-card events-card">
+        <mat-card-header><span class="section-icon orange"><mat-icon>event_note</mat-icon></span><div><mat-card-title>Linked tasks</mat-card-title><mat-card-subtitle>{{ events().length }} {{ events().length === 1 ? 'task' : 'tasks' }}</mat-card-subtitle></div></mat-card-header>
+        <mat-card-content>
+          @for (event of events(); track event.eventId) {
+            <a class="event-row" [routerLink]="['/events', event.eventId]">
+              <span class="event-date"><strong>{{ event.eventDate ? (event.eventDate | date:'dd') : '—' }}</strong><small>{{ event.eventDate ? (event.eventDate | date:'MMM yyyy') : 'No date' }}</small></span>
+              <span class="event-main"><strong>{{ event.title }}</strong><small>{{ event.priorityTitle || 'No priority' }} · {{ event.eventTypeTitle || 'Task' }} · {{ event.areaTitle || 'No area' }}</small></span>
+              <span class="status-pill">{{ event.eventStatusTitle || 'No status' }}</span><mat-icon>chevron_right</mat-icon>
+            </a>
+          } @empty {
+            <div class="empty-state"><mat-icon>event_busy</mat-icon><strong>No linked tasks</strong><span>This contact has not been linked to a task yet.</span></div>
+          }
+        </mat-card-content>
+      </mat-card>
+    </div>
+    </div>
+  }
+</main>

@@ -1,0 +1,262 @@
+<main class="triage-page app-page app-page--with-back">
+  <header class="app-page-header">
+    <div class="app-page-heading">
+      <span class="app-page-icon app-page-icon--orange"><mat-icon>mark_email_unread</mat-icon></span>
+      <div class="app-page-copy">
+        <h1 class="app-page-title">Email triage</h1>
+        <p class="app-page-subtitle">Review incoming emails before tasks are allocated or automated.</p>
+      </div>
+    </div>
+    <button mat-stroked-button type="button" (click)="refresh()" [disabled]="loading">
+      <mat-icon>refresh</mat-icon>Refresh
+    </button>
+  </header>
+  <div class="app-back-row">
+    <a class="app-back-link" routerLink="/settings"><mat-icon>arrow_back</mat-icon>Back</a>
+  </div>
+
+  @if (errorMessage) {
+    <div class="message error" role="alert"><mat-icon>error_outline</mat-icon>{{ errorMessage }}</div>
+  }
+  @if (successMessage) {
+    <div class="message success" role="status"><mat-icon>check_circle_outline</mat-icon>{{ successMessage }}</div>
+  }
+
+  <section class="triage-grid">
+    <mat-card class="inbox-card">
+      <mat-card-header>
+        <div>
+          <mat-card-title>Incoming emails</mat-card-title>
+          <mat-card-subtitle>{{ total }} {{ total === 1 ? 'message' : 'messages' }}</mat-card-subtitle>
+        </div>
+        <mat-form-field appearance="outline" class="status-filter" subscriptSizing="dynamic">
+          <mat-label>Status</mat-label>
+          <mat-select [formControl]="filterControl">
+            @for (option of statusOptions; track option.label) {
+              <mat-option [value]="option.value">{{ option.label }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </mat-card-header>
+
+      @if (loading) {
+        <div class="loading"><mat-spinner diameter="34" /><span>Loading emails…</span></div>
+      } @else if (items.length === 0) {
+        <div class="empty-state">
+          <mat-icon>inbox</mat-icon>
+          <h2>No emails here</h2>
+          <p>New messages matching this status will appear here.</p>
+        </div>
+      } @else {
+        <div class="email-list">
+          @for (item of items; track item.emailIntakeId) {
+            <button class="email-row" type="button"
+                    [class.selected]="selectedId === item.emailIntakeId"
+                    (click)="select(item)">
+              <span class="row-top">
+                <strong>{{ senderName(item) }}</strong>
+                <time>{{ item.receivedAt | date:'d MMM, HH:mm' }}</time>
+              </span>
+              <span class="row-subject">{{ item.subject || '(No subject)' }}</span>
+              <span class="row-footer">
+                <span class="status" [attr.data-status]="item.status">{{ statusLabel(item.status) }}</span>
+                <span class="ai-state" [attr.data-status]="item.aiStatus"><mat-icon>auto_awesome</mat-icon>{{ statusLabel(item.aiStatus) }}</span>
+                @if (item.suggestionCount > 0) {
+                  <span class="suggestion-count"><mat-icon>task_alt</mat-icon>{{ item.suggestionCount }}</span>
+                }
+              </span>
+            </button>
+          }
+        </div>
+        <footer class="pagination">
+          <span>{{ firstItemNumber }}–{{ lastItemNumber }} of {{ total }}</span>
+          <div>
+            <button mat-icon-button type="button" (click)="previousPage()" [disabled]="!canGoBack" aria-label="Previous page"><mat-icon>chevron_left</mat-icon></button>
+            <button mat-icon-button type="button" (click)="nextPage()" [disabled]="!canGoForward" aria-label="Next page"><mat-icon>chevron_right</mat-icon></button>
+          </div>
+        </footer>
+      }
+    </mat-card>
+
+    <mat-card class="detail-card">
+      @if (detailLoading) {
+        <div class="loading detail-loading"><mat-spinner diameter="34" /><span>Loading email…</span></div>
+      } @else if (!selected) {
+        <div class="empty-state detail-empty">
+          <mat-icon>drafts</mat-icon>
+          <h2>Select an email</h2>
+          <p>Choose a message from the inbox to review its contents.</p>
+        </div>
+      } @else {
+        <article class="email-detail">
+          <header class="detail-header">
+            <div class="detail-title">
+              <span class="status" [attr.data-status]="selected.status">{{ statusLabel(selected.status) }}</span>
+              <h2>{{ selected.subject || '(No subject)' }}</h2>
+            </div>
+            <dl class="email-meta">
+              <div><dt>From</dt><dd>{{ senderName(selected) }} @if (selected.senderName && selected.senderEmail) { <span>&lt;{{ selected.senderEmail }}&gt;</span> }</dd></div>
+              <div><dt>Received</dt><dd>{{ selected.receivedAt | date:'medium' }}</dd></div>
+              <div><dt>Delivered to</dt><dd>{{ selected.envelopeRecipient }}</dd></div>
+              @if (selected.replyToEmail) { <div><dt>Reply to</dt><dd>{{ selected.replyToEmail }}</dd></div> }
+            </dl>
+          </header>
+
+          <section class="detail-section">
+            <h3>Message</h3>
+            <div class="message-body">{{ selected.extractedText || 'No readable message body was extracted.' }}</div>
+          </section>
+
+          @if (selected.lastError) {
+            <section class="detail-section processing-error">
+              <h3><mat-icon>warning_amber</mat-icon>Processing error</h3>
+              <pre>{{ selected.lastError }}</pre>
+            </section>
+          }
+
+          @if (selected.aiLastError) {
+            <section class="detail-section processing-error">
+              <h3><mat-icon>warning_amber</mat-icon>AI processing error</h3>
+              <pre>{{ selected.aiLastError }}</pre>
+            </section>
+          }
+
+          <section class="detail-section review-section">
+            <div class="section-heading">
+              <div><h3>Review decision</h3><p>Add context that can later be used to improve automatic triage.</p></div>
+              @if (selected.triageConfidence !== undefined && selected.triageConfidence !== null) {
+                <span class="confidence">{{ confidence(selected.triageConfidence) }}</span>
+              }
+            </div>
+            <form [formGroup]="reviewForm">
+              <mat-form-field appearance="outline">
+                <mat-label>Summary</mat-label>
+                <textarea matInput formControlName="triageSummary" rows="2" placeholder="Short description of what this email needs"></textarea>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Review notes or reason</mat-label>
+                <textarea matInput formControlName="triageReason" rows="2" placeholder="Why it was accepted, quarantined, or rejected"></textarea>
+              </mat-form-field>
+              <div class="review-actions">
+                <button mat-stroked-button type="button" (click)="review('rejected')" [disabled]="saving" class="reject"><mat-icon>block</mat-icon>Reject</button>
+                <button mat-stroked-button type="button" (click)="review('quarantined')" [disabled]="saving" class="quarantine"><mat-icon>shield</mat-icon>Quarantine</button>
+                <button mat-flat-button type="button" (click)="review('needs_review')" [disabled]="saving" class="keep-review">
+                  @if (saving) { <mat-spinner diameter="18" /> } @else { <mat-icon>check</mat-icon> }
+                  Keep for review
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="detail-section suggestions-section">
+            <div class="section-heading">
+              <div><h3>Suggested tasks</h3><p>Approve or reject tasks extracted from this email.</p></div>
+              <span class="count-badge">{{ selected.suggestions.length }}</span>
+            </div>
+            @for (suggestion of selected.suggestions; track suggestion.emailTaskSuggestionId) {
+              <article class="suggestion-card">
+                <div class="suggestion-heading">
+                  <div><span>{{ actionLabel(suggestion.actionType) }} · Suggestion {{ suggestion.suggestionNumber }}</span><h4>{{ suggestion.title }}</h4></div>
+                  <span class="status" [attr.data-status]="suggestion.status">{{ statusLabel(suggestion.status) }}</span>
+                </div>
+                @if (suggestion.description) { <p class="suggestion-description">{{ suggestion.description }}</p> }
+                <dl class="suggestion-meta">
+                  @if (suggestion.targetCompletionDate) { <div><dt>Target date</dt><dd>{{ suggestion.targetCompletionDate | date:'mediumDate' }}</dd></div> }
+                  @if (suggestion.projectId) { <div><dt>Project</dt><dd>#{{ suggestion.projectId }}</dd></div> }
+                  @if (suggestion.targetEventId) { <div><dt>Existing task</dt><dd>#{{ suggestion.targetEventId }}</dd></div> }
+                  @if (suggestion.eventId) { <div><dt>Created task</dt><dd><a [routerLink]="['/events', suggestion.eventId]">#{{ suggestion.eventId }}</a></dd></div> }
+                  <div><dt>Confidence</dt><dd>{{ confidence(suggestion.confidence) }}</dd></div>
+                </dl>
+                @if (suggestion.actionType !== 'update_existing_task') {
+                  <div class="suggestion-task-fields">
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Task type</mat-label>
+                      <mat-select [value]="suggestionEdits[suggestion.emailTaskSuggestionId]?.eventTypeId"
+                        (selectionChange)="setSuggestionEdit(suggestion.emailTaskSuggestionId, 'eventTypeId', $event.value)"
+                        [disabled]="suggestion.status === 'created' || suggestion.status === 'applied'">
+                        @for (type of eventTypes; track type.eventTypeId) { <mat-option [value]="type.eventTypeId">{{ type.title }}</mat-option> }
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Area</mat-label>
+                      <mat-select [value]="suggestionEdits[suggestion.emailTaskSuggestionId]?.areaId"
+                        (selectionChange)="setSuggestionEdit(suggestion.emailTaskSuggestionId, 'areaId', $event.value)"
+                        [disabled]="suggestion.status === 'created' || suggestion.status === 'applied'">
+                        @for (area of areas; track area.areaId) { <mat-option [value]="area.areaId">{{ area.title }}</mat-option> }
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Priority</mat-label>
+                      <mat-select [value]="suggestionEdits[suggestion.emailTaskSuggestionId]?.priorityId"
+                        (selectionChange)="setSuggestionEdit(suggestion.emailTaskSuggestionId, 'priorityId', $event.value)"
+                        [disabled]="suggestion.status === 'created' || suggestion.status === 'applied'">
+                        @for (priority of priorities; track priority.eventPriorityId) { <mat-option [value]="priority.eventPriorityId">{{ priority.title }}</mat-option> }
+                      </mat-select>
+                    </mat-form-field>
+                    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                      <mat-label>Project</mat-label>
+                      <mat-select [value]="suggestionEdits[suggestion.emailTaskSuggestionId]?.projectId"
+                        (selectionChange)="setSuggestionEdit(suggestion.emailTaskSuggestionId, 'projectId', $event.value)"
+                        [disabled]="suggestion.status === 'created' || suggestion.status === 'applied'">
+                        <mat-option [value]="null">No project</mat-option>
+                        @for (project of projects; track project.projectId) { <mat-option [value]="project.projectId">{{ project.title }}</mat-option> }
+                      </mat-select>
+                    </mat-form-field>
+                  </div>
+                }
+                @if (suggestion.reason) { <p class="suggestion-reason"><strong>Reason:</strong> {{ suggestion.reason }}</p> }
+                @if (evidence(suggestion).length > 0) {
+                  <div class="evidence"><strong>Email evidence</strong><ul>@for (item of evidence(suggestion); track item) { <li>{{ item }}</li> }</ul></div>
+                }
+                @if (missingInformation(suggestion).length > 0) {
+                  <div class="missing-info"><strong>Missing information</strong><ul>@for (item of missingInformation(suggestion); track item) { <li>{{ item }}</li> }</ul></div>
+                }
+                <mat-form-field appearance="outline" subscriptSizing="dynamic">
+                  <mat-label>Suggestion review notes</mat-label>
+                  <textarea matInput rows="2" [value]="suggestionNotes[suggestion.emailTaskSuggestionId] || ''"
+                    (input)="suggestionNotes[suggestion.emailTaskSuggestionId] = $any($event.target).value"></textarea>
+                </mat-form-field>
+                <div class="suggestion-actions">
+                  <button mat-stroked-button type="button" (click)="reviewSuggestion(suggestion, 'rejected')"
+                    [disabled]="reviewingSuggestionId !== null || suggestion.status === 'created' || suggestion.status === 'applied'">Reject</button>
+                  <button mat-flat-button type="button" class="approve" (click)="reviewSuggestion(suggestion, 'approved')"
+                    [disabled]="reviewingSuggestionId !== null || suggestion.status === 'created' || suggestion.status === 'applied'"><mat-icon>task_alt</mat-icon>Approve</button>
+                </div>
+              </article>
+            } @empty {
+              <div class="suggestions-empty"><mat-icon>auto_awesome</mat-icon><p>No task suggestions have been generated yet.</p></div>
+            }
+          </section>
+
+          <details class="technical-details">
+            <summary>Technical details</summary>
+            <dl class="email-meta">
+              <div><dt>SES message ID</dt><dd>{{ selected.providerMessageId }}</dd></div>
+              <div><dt>S3 object</dt><dd>s3://{{ selected.storageBucket }}/{{ selected.storageKey }}</dd></div>
+              <div><dt>Attempts</dt><dd>{{ selected.attemptCount }}</dd></div>
+              <div><dt>AI status</dt><dd>{{ statusLabel(selected.aiStatus) }}</dd></div>
+            </dl>
+            @if (selected.aiRuns.length > 0) {
+              <h4>AI provider runs</h4>
+              <div class="ai-runs">
+                @for (run of selected.aiRuns; track run.emailAiRunId) {
+                  <div class="ai-run">
+                    <span class="status" [attr.data-status]="run.status">{{ run.runRole }} · {{ run.status }}</span>
+                    <strong>{{ run.provider }} / {{ run.model }}</strong>
+                    <span>{{ run.startedAt | date:'medium' }} · {{ run.durationMs ?? 0 }}ms · {{ run.inputTokens ?? 0 }} in / {{ run.outputTokens ?? 0 }} out</span>
+                    @if (run.errorMessage) { <pre>{{ run.errorMessage }}</pre> }
+                    @if (run.response) {
+                      <details class="run-response"><summary>View provider result</summary><pre>{{ run.response | json }}</pre></details>
+                    }
+                  </div>
+                }
+              </div>
+            }
+            @if (selected.authenticationResult) { <h4>Authentication</h4><pre>{{ selected.authenticationResult | json }}</pre> }
+            @if (selected.extractionResult) { <h4>Extraction</h4><pre>{{ selected.extractionResult | json }}</pre> }
+          </details>
+        </article>
+      }
+    </mat-card>
+  </section>
+</main>

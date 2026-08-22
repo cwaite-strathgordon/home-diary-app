@@ -1,0 +1,7 @@
+<div mat-dialog-title class="forecast-heading"><span class="heading-icon">{{ symbol(weather.weatherCode) }}</span><div><h2>Seven-day forecast</h2><p>{{ weather.propertyName }} · {{ weather.location }}</p></div></div>
+<mat-dialog-content><div class="forecast-list">
+  @for (day of weather.forecast; track day.date; let first = $first) {
+    <article class="forecast-day" [class.today]="first"><div class="day-name"><strong>{{ first ? 'Today' : (day.date | date:'EEEE') }}</strong><small>{{ day.date | date:'dd MMM' }}</small></div><span class="day-symbol" role="img" [attr.aria-label]="description(day.weatherCode)">{{ symbol(day.weatherCode) }}</span><span class="condition">{{ description(day.weatherCode) }}</span><span class="rain"><mat-icon>water_drop</mat-icon>{{ day.precipitationProbability ?? 0 }}%</span><span class="temperatures"><strong>{{ day.maximumTemperature | number:'1.0-0' }}°</strong><small>{{ day.minimumTemperature | number:'1.0-0' }}°</small></span></article>
+  } @empty { <p class="empty">The forecast is currently unavailable.</p> }
+</div></mat-dialog-content>
+<mat-dialog-actions align="end"><button mat-flat-button mat-dialog-close>Close</button></mat-dialog-actions>

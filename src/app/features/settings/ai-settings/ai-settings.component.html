@@ -1,0 +1,91 @@
+<main class="ai-page app-page app-page--with-back">
+  <header class="app-page-header">
+    <div class="app-page-heading">
+      <span class="app-page-icon app-page-icon--purple"><mat-icon>auto_awesome</mat-icon></span>
+      <div class="app-page-copy">
+        <h1 class="app-page-title">AI processing</h1>
+        <p class="app-page-subtitle">Choose the primary email-triage provider and optionally compare a shadow provider.</p>
+      </div>
+    </div>
+  </header>
+  <div class="app-back-row"><a class="app-back-link" routerLink="/settings"><mat-icon>arrow_back</mat-icon>Back</a></div>
+
+  @if (errorMessage) { <div class="message error" role="alert"><mat-icon>error_outline</mat-icon>{{ errorMessage }}</div> }
+  @if (successMessage) { <div class="message success" role="status"><mat-icon>check_circle_outline</mat-icon>{{ successMessage }}</div> }
+
+  @if (loading) {
+    <mat-card class="settings-card"><div class="loading"><mat-spinner diameter="36" /><span>Loading AI settings…</span></div></mat-card>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()">
+      <mat-card class="settings-card">
+        <mat-card-header><mat-card-title>Processing mode</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <div class="toggle-row">
+            <div><strong>Enable AI email triage</strong><p>Process newly ingested emails and create suggestions for administrator review.</p></div>
+            <mat-slide-toggle formControlName="enabled" aria-label="Enable AI email triage" />
+          </div>
+
+          <div class="provider-grid">
+            <mat-form-field appearance="outline">
+              <mat-label>Primary provider</mat-label>
+              <mat-select formControlName="primaryProvider">
+                @for (provider of providers; track provider.value) { <mat-option [value]="provider.value">{{ provider.label }}</mat-option> }
+              </mat-select>
+              <mat-hint>Only this provider creates task suggestions.</mat-hint>
+            </mat-form-field>
+          </div>
+
+          <div class="toggle-row parallel-toggle">
+            <div><strong>Run a parallel comparison</strong><p>Call a second provider in shadow mode and retain both responses for evaluation.</p></div>
+            <mat-slide-toggle formControlName="parallelEnabled" aria-label="Run a parallel provider comparison" />
+          </div>
+
+          @if (form.controls.parallelEnabled.value) {
+            <div class="provider-grid">
+              <mat-form-field appearance="outline">
+                <mat-label>Parallel provider</mat-label>
+                <mat-select formControlName="parallelProvider">
+                  @for (provider of providers; track provider.value) { <mat-option [value]="provider.value">{{ provider.label }}</mat-option> }
+                </mat-select>
+                <mat-hint>Must be different from the primary provider.</mat-hint>
+              </mat-form-field>
+              <div class="cost-warning"><mat-icon>info</mat-icon><span>Parallel testing sends the email to both providers and incurs usage charges from both.</span></div>
+            </div>
+          }
+        </mat-card-content>
+      </mat-card>
+
+      <div class="provider-cards">
+        <mat-card class="settings-card provider-card">
+          <mat-card-header><span class="provider-mark openai">O</span><div><mat-card-title>OpenAI</mat-card-title><mat-card-subtitle>Responses API with strict structured output</mat-card-subtitle></div></mat-card-header>
+          <mat-card-content>
+            <mat-form-field appearance="outline"><mat-label>Model</mat-label><input matInput formControlName="openAiModel" /></mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ openAiKeyConfigured ? 'Replace API key' : 'API key' }}</mat-label>
+              <input matInput type="password" formControlName="openAiApiKey" autocomplete="new-password" />
+              <mat-hint>{{ openAiKeyConfigured ? 'A key is configured. Leave blank to keep it.' : 'Required when OpenAI is selected.' }}</mat-hint>
+            </mat-form-field>
+            <div class="key-status" [class.configured]="openAiKeyConfigured"><mat-icon>{{ openAiKeyConfigured ? 'verified_user' : 'key_off' }}</mat-icon><span>{{ openAiKeyConfigured ? 'Encrypted key configured' : 'No key configured' }}</span>@if (openAiKeyConfigured) { <button mat-button type="button" (click)="removeOpenAiKey()">Remove</button> }</div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="settings-card provider-card">
+          <mat-card-header><span class="provider-mark deepseek">D</span><div><mat-card-title>DeepSeek</mat-card-title><mat-card-subtitle>OpenAI-compatible JSON API</mat-card-subtitle></div></mat-card-header>
+          <mat-card-content>
+            <mat-form-field appearance="outline"><mat-label>Model</mat-label><input matInput formControlName="deepSeekModel" /></mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ deepSeekKeyConfigured ? 'Replace API key' : 'API key' }}</mat-label>
+              <input matInput type="password" formControlName="deepSeekApiKey" autocomplete="new-password" />
+              <mat-hint>{{ deepSeekKeyConfigured ? 'A key is configured. Leave blank to keep it.' : 'Required when DeepSeek is selected.' }}</mat-hint>
+            </mat-form-field>
+            <div class="key-status" [class.configured]="deepSeekKeyConfigured"><mat-icon>{{ deepSeekKeyConfigured ? 'verified_user' : 'key_off' }}</mat-icon><span>{{ deepSeekKeyConfigured ? 'Encrypted key configured' : 'No key configured' }}</span>@if (deepSeekKeyConfigured) { <button mat-button type="button" (click)="removeDeepSeekKey()">Remove</button> }</div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+
+      <mat-card class="security-note"><mat-icon>lock</mat-icon><div><strong>API-key encryption</strong><p>Provider keys are encrypted before database storage. The separate master encryption key must be configured on both the API and AI worker.</p></div></mat-card>
+
+      <div class="form-actions"><button mat-flat-button class="save-btn" type="submit" [disabled]="saving">@if (saving) { <mat-spinner diameter="18" /> } @else { <mat-icon>save</mat-icon> }Save AI settings</button></div>
+    </form>
+  }
+</main>

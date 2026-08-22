@@ -1,0 +1,162 @@
+<section class="page-content app-page">
+  <header class="app-page-header">
+    <div class="app-page-heading">
+      <span class="app-page-icon"><mat-icon>calendar_month</mat-icon></span>
+      <div class="app-page-copy">
+        <h1 class="app-page-title">Calendar</h1>
+        <p class="app-page-subtitle">See task start, target and completion dates in one place.</p>
+      </div>
+    </div>
+    <mat-button-toggle-group class="view-switcher" [value]="view()" aria-label="Calendar view">
+      <mat-button-toggle value="year" (click)="setView('year')">Year</mat-button-toggle>
+      <mat-button-toggle value="month" (click)="setView('month')">Month</mat-button-toggle>
+      <mat-button-toggle value="week" (click)="setView('week')">Week</mat-button-toggle>
+    </mat-button-toggle-group>
+  </header>
+
+  <mat-card class="calendar-shell">
+    <div class="calendar-toolbar">
+      <div class="period-navigation">
+        <button mat-icon-button (click)="previousPeriod()" aria-label="Previous period">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <h2>{{ periodLabel() }}</h2>
+        <button mat-icon-button (click)="nextPeriod()" aria-label="Next period">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      <button mat-stroked-button class="today-button" (click)="goToToday()">Today</button>
+    </div>
+
+    @if (loading()) {
+      <mat-progress-bar mode="indeterminate" class="calendar-loading" />
+    }
+
+    @if (error()) {
+      <div class="calendar-error"><mat-icon>error_outline</mat-icon>{{ error() }}</div>
+    }
+
+    @switch (view()) {
+      @case ('year') {
+        <div class="year-grid">
+          @for (month of yearMonths(); track month.label) {
+            <section class="year-month">
+              <button class="month-heading" type="button" (click)="openMonth(month.month)">
+                {{ month.label }}
+              </button>
+              <div class="mini-weekdays">
+                @for (weekday of compactWeekdays; track $index) { <span>{{ weekday }}</span> }
+              </div>
+              <div class="mini-days">
+                @for (week of month.weeks; track $index) {
+                  @for (day of week; track day.key) {
+                    <button type="button" class="mini-day"
+                            [class.other-month]="day.otherMonth"
+                            [class.today]="day.today"
+                            [matTooltip]="markerTooltip(day.markers)"
+                            [matTooltipDisabled]="!day.markers.length"
+                            matTooltipClass="calendar-event-tooltip"
+                            (click)="openMonth(month.month)">
+                      <span>{{ day.dayNumber }}</span>
+                      @if (!day.otherMonth && day.markers.length) {
+                        <i [class]="'priority-dot ' + markerClass(highestPriority(day.markers))"></i>
+                      }
+                    </button>
+                  }
+                }
+              </div>
+            </section>
+          }
+        </div>
+      }
+
+      @case ('month') {
+        <div class="month-calendar">
+          <div class="month-weekdays">
+            @for (weekday of weekdays; track weekday) { <div>{{ weekday }}</div> }
+          </div>
+          <div class="month-grid">
+            @for (week of monthWeeks(); track $index) {
+              @for (day of week; track day.key) {
+                <section class="month-day" [class.other-month]="day.otherMonth" [class.today]="day.today">
+                  <div class="day-heading">
+                    <span class="mobile-weekday">{{ shortDayLabel(day.date) }}</span>
+                    <span class="day-number">{{ day.dayNumber }}</span>
+                    @if (day.dayNumber === 1 || $first) { <span class="month-name">{{ shortMonthLabel(day.date) }}</span> }
+                  </div>
+                  <div class="day-events">
+                    @for (marker of day.markers.slice(0, 3); track marker.eventId) {
+                      <a class="month-event" [routerLink]="['/events', marker.eventId]"
+                         [class]="'month-event ' + markerClass(marker.priority)"
+                         [matTooltip]="marker.title">
+                        <span class="event-icons">
+                          @for (dateType of marker.dateTypes; track dateType) {
+                            <mat-icon [attr.title]="markerDateLabel(dateType)">{{ markerIcon(dateType) }}</mat-icon>
+                          }
+                        </span>
+                        <span class="event-title">{{ marker.title }}</span>
+                      </a>
+                    }
+                    @if (day.markers.length > 3) {
+                      <span class="more-events">+{{ day.markers.length - 3 }} more</span>
+                    }
+                  </div>
+                </section>
+              }
+            }
+          </div>
+        </div>
+      }
+
+      @case ('week') {
+        <div class="week-grid">
+          @for (day of weekDays(); track day.key) {
+            <section class="week-day" [class.today]="day.today">
+              <header>
+                <span>{{ shortDayLabel(day.date) }}</span>
+                <strong>{{ day.dayNumber }}</strong>
+                <small>{{ shortMonthLabel(day.date) }}</small>
+              </header>
+              <div class="week-events">
+                @for (marker of day.markers; track marker.eventId) {
+                  <a class="week-event" [routerLink]="['/events', marker.eventId]">
+                    <i [class]="markerClass(marker.priority)"></i>
+                    <div class="week-event-content">
+                      <div class="week-event-heading">
+                        <span>{{ marker.title }}</span>
+                        <span class="event-icons">
+                          @for (dateType of marker.dateTypes; track dateType) {
+                            <mat-icon [attr.title]="markerDateLabel(dateType)">{{ markerIcon(dateType) }}</mat-icon>
+                          }
+                        </span>
+                      </div>
+                      <small>{{ marker.priority }}@if (marker.area) { · {{ marker.area }}}@if (marker.eventType) { · {{ marker.eventType }}}</small>
+                    </div>
+                    <mat-icon class="open-event">chevron_right</mat-icon>
+                  </a>
+                } @empty {
+                  <p class="no-events">No tasks</p>
+                }
+              </div>
+            </section>
+          }
+        </div>
+      }
+    }
+
+    <footer class="calendar-footer">
+      <div class="calendar-legend" aria-label="Task priority colours">
+        <span><i class="priority-critical"></i>Critical</span>
+        <span><i class="priority-high"></i>High</span>
+        <span><i class="priority-medium"></i>Medium</span>
+        <span><i class="priority-low"></i>Low</span>
+        <span><i class="priority-wish-list"></i>Wish List</span>
+      </div>
+      <div class="date-legend" aria-label="Task date types">
+        <span><mat-icon>play_circle</mat-icon>Start</span>
+        <span><mat-icon>flag</mat-icon>Target</span>
+        <span><mat-icon>task_alt</mat-icon>Completed</span>
+      </div>
+    </footer>
+  </mat-card>
+</section>

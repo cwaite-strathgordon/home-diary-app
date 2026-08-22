@@ -1,0 +1,22 @@
+.profile-page { box-sizing: border-box; max-width: 1160px; width: 100%; }
+.profile-layout { align-items: start; display: grid; gap: 20px; grid-template-columns: minmax(0, 2fr) minmax(270px, 1fr); }
+mat-card { background: #fff !important; border: 1px solid #d8d2c7 !important; border-radius: 12px !important; box-shadow: 0 2px 8px rgba(45, 39, 28, .06) !important; }
+mat-card-header { align-items: center; padding: 20px 22px 12px !important; }
+mat-card-content { padding: 14px 22px 22px !important; }
+.profile-avatar, .identity-icon { align-items: center; background: #2a7a7a; border-radius: 50%; color: #fff; display: flex; flex: 0 0 42px; font-size: 14px; font-weight: 750; height: 42px; justify-content: center; margin-right: 12px; }
+.identity-icon { background: #f1e9d4; border-radius: 10px; color: #7c6532; }
+.name-fields { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+.full-width { width: 100%; }
+.identity-card strong { color: #20201d; display: block; font-size: 15px; overflow-wrap: anywhere; }
+.identity-label { color: #74746c; display: block; font-size: 11px; font-weight: 700; margin-bottom: 5px; text-transform: uppercase; }
+.task-email-label { border-top: 1px solid #ded8cd; margin-top: 18px; padding-top: 16px; }
+.identity-card p { color: #62625b; font-size: 12px; line-height: 1.55; margin: 16px 0 0; }
+.form-actions { display: flex; justify-content: flex-end; margin-top: 5px; }
+.save-button { background: #2a7a7a !important; border-radius: 22px !important; color: #fff !important; height: 44px; }
+.message { align-items: center; border-radius: 8px; display: flex; font-size: 13px; gap: 7px; margin: 0 0 14px; padding: 10px 12px; }
+.message mat-icon { font-size: 18px; height: 18px; width: 18px; }
+.message.error { background: #fff0ee; color: #96362f; }
+.message.success { background: #e8f4ed; color: #276d45; }
+.loading { align-items: center; color: #62625b; display: flex; gap: 12px; justify-content: center; padding: 90px; }
+@media (max-width: 800px) { .profile-layout { grid-template-columns: 1fr; } }
+@media (max-width: 560px) { .name-fields { gap: 0; grid-template-columns: 1fr; } mat-card-content { padding-inline: 17px !important; } }

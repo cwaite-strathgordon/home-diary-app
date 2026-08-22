@@ -8,14 +8,11 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { NativeDateAdapter, DateAdapter, MAT_DATE_FORMATS, MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatListModule } from '@angular/material/list';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatChipsModule } from '@angular/material/chips';
-import { MatDividerModule } from '@angular/material/divider';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
-import { forkJoin, Observable, debounceTime, distinctUntilChanged } from 'rxjs';
-import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { FormControl } from '@angular/forms';
+import { Router } from '@angular/router';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { forkJoin, Observable } from 'rxjs';
 
 class DdMmYyyyDateAdapter extends NativeDateAdapter {
   override parse(value: string | null): Date | null {
@@ -48,14 +45,15 @@ const DD_MM_YYYY_FORMATS = {
 
 import { EventsService } from '../../../core/services/events.service';
 import { LookupService } from '../../../core/services/lookup.service';
-import { ContactsService } from '../../../core/services/contacts.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { HomeEventDetail } from '../../../core/models/home-event.model';
-import { Area, EventType, EventStatus } from '../../../core/models/lookup.model';
-import { Contact, EventContactLink } from '../../../core/models/contact.model';
+import { Area, EventType, EventStatus, EventPriority } from '../../../core/models/lookup.model';
+import { Project } from '../../../core/models/project.model';
+import { ProjectsService } from '../../../core/services/projects.service';
 
 export interface EventFormData {
   event?: HomeEventDetail;
+  projectId?: number;
 }
 
 @Component({
@@ -64,8 +62,8 @@ export interface EventFormData {
   imports: [
     CommonModule, ReactiveFormsModule, MatDialogModule, MatFormFieldModule,
     MatInputModule, MatSelectModule, MatDatepickerModule, MatNativeDateModule,
-    MatButtonModule, MatIconModule, MatListModule, MatAutocompleteModule,
-    MatChipsModule, MatDividerModule,
+    MatButtonModule, MatIconModule, MatTooltipModule,
+    MatCheckboxModule,
   ],
   providers: [
     { provide: DateAdapter,      useClass: DdMmYyyyDateAdapter },
@@ -82,13 +80,10 @@ export class EventFormComponent implements OnInit {
   areas    = signal<Area[]>([]);
   types    = signal<EventType[]>([]);
   statuses = signal<EventStatus[]>([]);
+  priorities = signal<EventPriority[]>([]);
+  projects = signal<Project[]>([]);
 
-  linkedContacts = signal<Contact[]>([]);
-  allContacts    = signal<Contact[]>([]);
-  filteredContacts = signal<Contact[]>([]);
-  contactSearch  = new FormControl('');
-  showNewContact = false;
-  newContactForm!: FormGroup;
+  isCompleted = false;
 
   constructor(
     private fb: FormBuilder,
@@ -96,114 +91,51 @@ export class EventFormComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: EventFormData,
     private eventsService: EventsService,
     private lookupService: LookupService,
-    private contactsService: ContactsService,
+    private projectsService: ProjectsService,
     private auth: AuthService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.isEdit = !!this.data?.event;
     const ev = this.data?.event;
+    this.isCompleted = ev?.eventStatusTitle?.toLowerCase() === 'complete';
 
     this.form = this.fb.group({
       eventId:       [ev?.eventId ?? 0],
       title:         [ev?.title ?? '',   Validators.required],
       description:   [ev?.description ?? ''],
       eventDate:     [ev?.eventDate ? new Date(ev.eventDate) : null],
+      targetCompletionDate: [ev?.targetCompletionDate ? new Date(ev.targetCompletionDate) : null],
+      actualCompletionDate: [ev?.actualCompletionDate ?? null],
       eventTypeId:   [ev?.eventTypeId ?? null,   Validators.required],
       areaId:        [ev?.areaId ?? null,         Validators.required],
       eventStatusId: [ev?.eventStatusId ?? null,  Validators.required],
+      priorityId:    [ev?.priorityId ?? 3,         Validators.required],
+      projectId:     [ev?.projectId ?? this.data?.projectId ?? null],
+      isRecurring:   [ev?.isRecurring ?? false],
+      recurrencePreset: [this.recurrencePreset(ev)],
+      recurrenceInterval: [ev?.recurrenceInterval ?? 1, Validators.min(1)],
+      recurrenceUnit: [ev?.recurrenceUnit ?? 'day'],
       createdById:   [ev?.createdById ?? this.auth.currentUser()?.userId],
-    });
-
-    this.newContactForm = this.fb.group({
-      firstName:   ['', Validators.required],
-      lastName:    [''],
-      email:       ['', Validators.email],
-      mobile:      [''],
-      companyName: [''],
     });
 
     forkJoin({
       areas:    this.lookupService.getAreas(),
       types:    this.lookupService.getEventTypes(),
       statuses: this.lookupService.getEventStatuses(),
-      contacts: this.contactsService.getAll(),
-    }).subscribe(({ areas, types, statuses, contacts }) => {
+      priorities: this.lookupService.getEventPriorities(),
+      projects: this.projectsService.getAll(),
+    }).subscribe(({ areas, types, statuses, priorities, projects }) => {
       this.areas.set(areas);
       this.types.set(types);
       this.statuses.set(statuses);
-      this.allContacts.set(contacts);
-      this.filteredContacts.set(contacts);
+      this.priorities.set(priorities);
+      this.projects.set(projects);
     });
 
-    if (this.isEdit && ev?.eventId) {
-      this.loadLinkedContacts(ev.eventId);
-    }
+    this.form.get('recurrencePreset')?.valueChanges.subscribe(preset => this.applyRecurrencePreset(preset));
 
-    this.contactSearch.valueChanges.pipe(
-      debounceTime(200),
-      distinctUntilChanged(),
-    ).subscribe(term => {
-      const t = (term ?? '').toLowerCase();
-      this.filteredContacts.set(
-        this.allContacts().filter(c =>
-          `${c.firstName} ${c.lastName} ${c.companyName ?? ''}`.toLowerCase().includes(t)
-        )
-      );
-    });
-  }
-
-  private loadLinkedContacts(eventId: number): void {
-    this.eventsService.getContactLinks(eventId).subscribe(links => {
-      const linked = links
-        .map(l => this.allContacts().find(c => c.contactId === l.contactId))
-        .filter((c): c is Contact => !!c);
-      this.linkedContacts.set(linked);
-    });
-  }
-
-  displayContact(contact: Contact): string {
-    return contact ? `${contact.firstName ?? ''} ${contact.lastName ?? ''}`.trim() : '';
-  }
-
-  addContact(contact: Contact): void {
-    if (this.linkedContacts().some(c => c.contactId === contact.contactId)) return;
-    const eventId = this.form.value.eventId;
-    if (eventId) {
-      this.eventsService.addContact({ contactId: contact.contactId, eventId }).subscribe(() => {
-        this.linkedContacts.update(list => [...list, contact]);
-      });
-    } else {
-      // New event — queue the link to be created after save
-      this.linkedContacts.update(list => [...list, contact]);
-    }
-    this.contactSearch.reset();
-  }
-
-  removeContact(contact: Contact): void {
-    const eventId = this.form.value.eventId;
-    if (eventId) {
-      this.eventsService.removeContact(contact.contactId, eventId).subscribe(() => {
-        this.linkedContacts.update(list => list.filter(c => c.contactId !== contact.contactId));
-      });
-    } else {
-      this.linkedContacts.update(list => list.filter(c => c.contactId !== contact.contactId));
-    }
-  }
-
-  toggleNewContact(): void {
-    this.showNewContact = !this.showNewContact;
-    if (!this.showNewContact) this.newContactForm.reset();
-  }
-
-  saveNewContact(): void {
-    if (this.newContactForm.invalid) return;
-    this.contactsService.create(this.newContactForm.value).subscribe(contact => {
-      this.allContacts.update(list => [...list, contact]);
-      this.addContact(contact);
-      this.showNewContact = false;
-      this.newContactForm.reset();
-    });
   }
 
   save(): void {
@@ -214,30 +146,53 @@ export class EventFormComponent implements OnInit {
     if (payload.eventDate instanceof Date) {
       payload.eventDate = payload.eventDate.toISOString().split('T')[0];
     }
-
-    const pendingContacts = this.isEdit ? [] : [...this.linkedContacts()];
+    if (payload.targetCompletionDate instanceof Date) {
+      payload.targetCompletionDate = payload.targetCompletionDate.toISOString().split('T')[0];
+    }
+    delete payload.recurrencePreset;
+    if (!payload.isRecurring) {
+      payload.recurrenceInterval = null;
+      payload.recurrenceUnit = null;
+    }
 
     const op: Observable<any> = this.isEdit
       ? this.eventsService.update(payload.eventId, payload)
       : this.eventsService.create(payload);
 
     op.subscribe({
-      next: (result: any) => {
-        const eventId = this.isEdit ? payload.eventId : result?.eventId;
-        if (!this.isEdit && pendingContacts.length && eventId) {
-          const links = pendingContacts.map(c =>
-            this.eventsService.addContact({ contactId: c.contactId, eventId })
-          );
-          forkJoin(links).subscribe(() => this.dialogRef.close(true));
-        } else {
-          this.dialogRef.close(true);
-        }
-      },
+      next: () => this.dialogRef.close(true),
       error: () => this.saving.set(false),
     });
   }
 
   cancel(): void {
     this.dialogRef.close(false);
+  }
+
+  openFullDetails(): void {
+    const eventId = this.data?.event?.eventId;
+    if (!eventId) return;
+    this.dialogRef.close(false);
+    this.router.navigate(['/events', eventId]);
+  }
+
+  private recurrencePreset(event?: HomeEventDetail): string {
+    if (!event?.isRecurring) return 'daily';
+    const key = `${event.recurrenceInterval}:${event.recurrenceUnit}`;
+    return ({ '1:day': 'daily', '1:week': 'weekly', '1:month': 'monthly',
+      '1:year': 'annual', '6:month': 'biannual' } as Record<string, string>)[key]
+      ?? (event.recurrenceUnit === 'month' ? 'custom-months' : 'custom-days');
+  }
+
+  private applyRecurrencePreset(preset: string): void {
+    const values: Record<string, { interval: number; unit: string }> = {
+      daily: { interval: 1, unit: 'day' }, weekly: { interval: 1, unit: 'week' },
+      monthly: { interval: 1, unit: 'month' }, annual: { interval: 1, unit: 'year' },
+      biannual: { interval: 6, unit: 'month' },
+    };
+    const value = values[preset];
+    if (value) this.form.patchValue({ recurrenceInterval: value.interval, recurrenceUnit: value.unit }, { emitEvent: false });
+    else if (preset === 'custom-days') this.form.patchValue({ recurrenceUnit: 'day' }, { emitEvent: false });
+    else if (preset === 'custom-months') this.form.patchValue({ recurrenceUnit: 'month' }, { emitEvent: false });
   }
 }

@@ -1,10 +1,12 @@
-<div class="dashboard">
+<div class="dashboard app-page">
 
   <!-- ── Page header ──────────────────────────────────────────── -->
-  <div class="dash-header">
-    <div>
-      <h1 class="greeting">Good morning, Alex! &#9728;&#65039;</h1>
-      <p class="greeting-sub">Here's what's happening with your home today.</p>
+  <div class="app-page-header">
+    <div class="app-page-heading dashboard-heading">
+      <div class="app-page-copy">
+        <div class="greeting-row"><h1 class="greeting app-page-title">{{ greeting() }}</h1><span class="greeting-weather" role="img" aria-label="Current weather">{{ weatherEmoji() }}</span></div>
+        <p class="greeting-sub app-page-subtitle">Here's what's happening with your home today.</p>
+      </div>
     </div>
     <button mat-flat-button class="add-task-btn" routerLink="/events">
       <mat-icon>add</mat-icon>
@@ -15,42 +17,6 @@
   <!-- ── Stats row (4 cards) ──────────────────────────────────── -->
   <div class="stats-row">
 
-    <!-- Home Overview -->
-    <mat-card class="stat-card home-overview-card">
-      <mat-card-content class="home-overview-content">
-        <div class="overview-left">
-          <div class="stat-header">
-            <div class="stat-icon-wrap teal-icon"><mat-icon>home</mat-icon></div>
-            <span class="stat-title">Home Overview</span>
-          </div>
-          <p class="health-status">Your home is in great shape!</p>
-          <div class="health-pct">{{ homeHealthScore }}%</div>
-          <p class="health-label">Home Health Score</p>
-          <mat-progress-bar mode="determinate" [value]="homeHealthScore" class="health-bar"></mat-progress-bar>
-        </div>
-        <div class="overview-art">
-          <svg viewBox="0 0 160 155" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="115" cy="50" r="30" fill="#F5D89A" opacity="0.75" />
-            <circle cx="115" cy="50" r="18" fill="#E8B050" opacity="0.8" />
-            <ellipse cx="80" cy="148" rx="68" ry="12" fill="#90C8A0" opacity="0.45" />
-            <rect x="38" y="88" width="78" height="60" fill="#6DB8B0" rx="5" />
-            <polygon points="28,90 77,52 126,90" fill="#C07848" />
-            <rect x="122" y="60" width="10" height="24" fill="#B06838" />
-            <rect x="54" y="100" width="26" height="36" fill="#4A9090" rx="4" />
-            <rect x="42" y="98" width="16" height="12" fill="#D8F0EC" rx="2" />
-            <rect x="98" y="98" width="16" height="12" fill="#D8F0EC" rx="2" />
-            <path d="M14,148 Q18,122 22,90" stroke="#9A6030" stroke-width="5" stroke-linecap="round" fill="none" />
-            <path d="M22,94 Q4,80 -1,68 Q10,78 22,94" fill="#4DAA5A" />
-            <path d="M22,94 Q42,80 50,70 Q38,80 22,94" fill="#5DBB6A" />
-            <path d="M22,94 Q12,83 5,86 Q14,79 22,94" fill="#3D9A4A" />
-            <circle cx="140" cy="141" r="4.5" fill="#E07820" opacity="0.8" />
-            <circle cx="148" cy="145" r="3.5" fill="#C86010" opacity="0.75" />
-            <circle cx="133" cy="144" r="3.5" fill="#E88830" opacity="0.7" />
-          </svg>
-        </div>
-      </mat-card-content>
-    </mat-card>
-
     <!-- Tasks -->
     <mat-card class="stat-card">
       <mat-card-content>
@@ -58,7 +24,7 @@
           <div class="stat-icon-wrap orange-icon"><mat-icon>task_alt</mat-icon></div>
           <span class="stat-title">Tasks</span>
         </div>
-        <div class="stat-number orange-num">8</div>
+        <div class="stat-number orange-num">{{ upcomingTaskCount() }}</div>
         <p class="stat-sub">Tasks Due Soon</p>
         <a class="stat-link" routerLink="/events">View all tasks &rarr;</a>
       </mat-card-content>
@@ -71,9 +37,9 @@
           <div class="stat-icon-wrap teal-icon"><mat-icon>handyman</mat-icon></div>
           <span class="stat-title">Maintenance</span>
         </div>
-        <div class="stat-number teal-num">3</div>
+        <div class="stat-number teal-num">{{ recurringTaskCount() }}</div>
         <p class="stat-sub">Scheduled Items</p>
-        <a class="stat-link" routerLink="/maintenance">View schedule &rarr;</a>
+        <a class="stat-link" routerLink="/events" [queryParams]="{ recurringOnly: true }">View schedule &rarr;</a>
       </mat-card-content>
     </mat-card>
 
@@ -84,11 +50,24 @@
           <div class="stat-icon-wrap orange-icon"><mat-icon>folder_open</mat-icon></div>
           <span class="stat-title">Documents</span>
         </div>
-        <div class="stat-number orange-num">24</div>
+        <div class="stat-number orange-num">{{ documentCount() }}</div>
         <p class="stat-sub">Files Stored</p>
         <a class="stat-link" routerLink="/documents">View documents &rarr;</a>
       </mat-card-content>
     </mat-card>
+
+    <!-- Property weather -->
+    <mat-card class="stat-card weather-card" [attr.data-weather-scene]="weatherScene()"><mat-card-content>
+      @if (weatherLoading()) { <mat-progress-bar mode="indeterminate" class="weather-loading"/> }
+      @if (weather(); as weather) {
+        <div class="weather-heading"><div><span class="weather-property">{{ weather.propertyName }}</span><span class="weather-location"><mat-icon>location_on</mat-icon>{{ weather.location }}</span></div></div>
+        <div class="weather-main"><strong>{{ weather.temperature | number:'1.0-0' }}°</strong><div><span>{{ weatherDescription(weather.weatherCode) }}</span><small>Feels like {{ weather.apparentTemperature | number:'1.0-0' }}°</small></div></div>
+        <div class="weather-details"><span><mat-icon>thermostat</mat-icon>{{ weather.minimumTemperature | number:'1.0-0' }}° / {{ weather.maximumTemperature | number:'1.0-0' }}°</span><span><mat-icon>water_drop</mat-icon>{{ weather.relativeHumidity }}%</span><span><mat-icon>air</mat-icon>{{ weather.windSpeed | number:'1.0-0' }} km/h</span></div>
+        <button type="button" class="forecast-link" (click)="openForecast()">View 7-day forecast <mat-icon>arrow_forward</mat-icon></button>
+      } @else if (!weatherLoading()) {
+        <div class="weather-empty"><div><strong>Local weather</strong><p>{{ weatherError() }}</p><a routerLink="/settings/property">Set property address</a></div></div>
+      }
+    </mat-card-content></mat-card>
 
   </div>
 
@@ -102,32 +81,50 @@
           <mat-icon class="widget-icon">task_alt</mat-icon>
           <mat-card-title>Upcoming Tasks</mat-card-title>
         </div>
-        <a class="view-all-link" routerLink="/events">View all</a>
+        <a class="view-all-link" routerLink="/events" [queryParams]="upcomingListParams">View all</a>
       </mat-card-header>
       <mat-card-content>
+        @if (taskWidgetLoading()) { <mat-progress-bar mode="indeterminate" class="task-widget-loading" /> }
         <div class="task-list">
-          @for (task of tasks; track task.title) {
-            <div class="task-row">
-              <mat-checkbox [checked]="task.done" color="primary"></mat-checkbox>
+          @for (task of upcomingTasks(); track task.eventId) {
+            <a class="task-row" [routerLink]="['/events', task.eventId]">
+              <mat-icon class="task-state-icon">radio_button_unchecked</mat-icon>
               <span class="task-title">{{ task.title }}</span>
-              <span class="task-badge" [class]="badgeClass(task.priority)">{{ task.priority }}</span>
+              <span class="task-badge" [class]="badgeClass(task.priorityTitle || '')">{{ task.priorityTitle || 'Unassigned' }}</span>
               <span class="task-date"
-                    [class.date-high]="task.priority === 'High'"
-                    [class.date-low]="task.priority === 'Low'">
-                {{ task.dueDate }}
+                    [class.date-high]="task.priorityTitle === 'Critical' || task.priorityTitle === 'High'"
+                    [class.date-low]="task.priorityTitle === 'Low'">
+                {{ task.targetCompletionDate | date:'dd/MMM/yy' }}
               </span>
-            </div>
+            </a>
+          } @empty {
+            @if (!taskWidgetLoading() && !taskWidgetError()) {
+              <div class="task-empty"><mat-icon>event_available</mat-icon><span>No tasks are due in the next seven days.</span></div>
+            }
           }
         </div>
 
-        <a class="overdue-banner" routerLink="/events">
-          <mat-icon class="overdue-icon">calendar_month</mat-icon>
-          <div class="overdue-body">
-            <span class="overdue-count">2 tasks overdue</span>
-            <p class="overdue-sub">Review and update your tasks to stay on track.</p>
-          </div>
-          <mat-icon class="overdue-chevron">chevron_right</mat-icon>
-        </a>
+        @if (upcomingMoreCount() > 0) {
+          <a class="more-tasks-link" routerLink="/events" [queryParams]="upcomingListParams">
+            {{ upcomingMoreCount() }} more {{ upcomingMoreCount() === 1 ? 'task is' : 'tasks are' }} due in the next 7 days
+            <mat-icon>arrow_forward</mat-icon>
+          </a>
+        }
+
+        @if (taskWidgetError()) { <p class="task-widget-error"><mat-icon>error_outline</mat-icon>{{ taskWidgetError() }}</p> }
+
+        <div class="overdue-dock">
+          <a class="overdue-banner" routerLink="/events" [queryParams]="overdueListParams">
+            <mat-icon class="overdue-icon">calendar_month</mat-icon>
+            <div class="overdue-body">
+              <span class="overdue-count">
+                {{ overdueTaskCount() }} {{ overdueTaskCount() === 1 ? 'task is' : 'tasks are' }} overdue
+              </span>
+              <p class="overdue-sub">Open the overdue task list.</p>
+            </div>
+            <mat-icon class="overdue-chevron">chevron_right</mat-icon>
+          </a>
+        </div>
       </mat-card-content>
     </mat-card>
 
@@ -138,24 +135,30 @@
           <mat-icon class="widget-icon">handyman</mat-icon>
           <mat-card-title>Maintenance Schedule</mat-card-title>
         </div>
-        <a class="view-all-link" routerLink="/maintenance">View all</a>
+        <a class="view-all-link" routerLink="/events" [queryParams]="{ recurringOnly: true }">View all</a>
       </mat-card-header>
       <mat-card-content>
+        @if (maintenanceLoading()) { <mat-progress-bar mode="indeterminate" class="maintenance-loading" /> }
         <div class="maintenance-list">
-          @for (item of maintenance; track item.title) {
-            <div class="maint-row">
+          @for (task of maintenanceTasks(); track task.eventId) {
+            <a class="maint-row" [routerLink]="['/events', task.eventId]">
               <div class="maint-icon-wrap">
-                <mat-icon>{{ item.icon }}</mat-icon>
+                <mat-icon>{{ maintenanceIcon(task) }}</mat-icon>
               </div>
               <div class="maint-info">
-                <span class="maint-title">{{ item.title }}</span>
-                <span class="maint-freq">{{ item.frequency }}</span>
+                <span class="maint-title">{{ task.title }}</span>
+                <span class="maint-freq">{{ maintenanceFrequency(task) }}</span>
               </div>
-              <span class="maint-date">{{ item.nextDate }}</span>
-            </div>
+              <span class="maint-date">{{ maintenanceDueDate(task) ? (maintenanceDueDate(task) | date:'dd MMM yyyy') : 'No date' }}</span>
+            </a>
+          } @empty {
+            @if (!maintenanceLoading() && !maintenanceError()) {
+              <div class="maintenance-empty"><mat-icon>event_repeat</mat-icon><span>No recurring tasks are scheduled.</span></div>
+            }
           }
         </div>
-        <a class="view-full-link" routerLink="/maintenance">
+        @if (maintenanceError()) { <p class="maintenance-error"><mat-icon>error_outline</mat-icon>{{ maintenanceError() }}</p> }
+        <a class="view-full-link" routerLink="/events" [queryParams]="{ recurringOnly: true }">
           View full maintenance schedule &rarr;
         </a>
       </mat-card-content>
@@ -169,12 +172,13 @@
           <mat-card-title>Calendar</mat-card-title>
         </div>
         <div class="cal-nav">
-          <span class="cal-month-label">May 2025</span>
-          <button mat-icon-button class="cal-nav-btn"><mat-icon>chevron_left</mat-icon></button>
-          <button mat-icon-button class="cal-nav-btn"><mat-icon>chevron_right</mat-icon></button>
+          <span class="cal-month-label">{{ calendarMonthLabel() }}</span>
+          <button mat-icon-button class="cal-nav-btn" (click)="previousMonth()" aria-label="Previous month"><mat-icon>chevron_left</mat-icon></button>
+          <button mat-icon-button class="cal-nav-btn" (click)="nextMonth()" aria-label="Next month"><mat-icon>chevron_right</mat-icon></button>
         </div>
       </mat-card-header>
       <mat-card-content>
+        @if (calendarLoading()) { <mat-progress-bar mode="indeterminate" class="calendar-loading" /> }
         <table class="mini-calendar">
           <thead>
             <tr>
@@ -184,14 +188,35 @@
             </tr>
           </thead>
           <tbody>
-            @for (week of calendarWeeks; track $index) {
+            @for (week of calendarWeeks(); track $index) {
               <tr>
                 @for (day of week; track $index) {
                   <td [class.cal-today]="day.today"
-                      [class.cal-other]="day.other"
-                      [class.cal-event]="day.event">
-                    {{ day.d }}
-                    @if (day.event) { <span class="cal-dot"></span> }
+                      [class.cal-other]="day.otherMonth">
+                    <span class="cal-date-number">{{ day.dayNumber }}</span>
+                    <span class="cal-markers">
+                      @if (day.markers.length) {
+                        <span class="calendar-marker" tabindex="0"
+                              [attr.aria-label]="day.markers.length + (day.markers.length === 1 ? ' task' : ' tasks')">
+                          <span [class]="'cal-dot ' + markerClass(highestPriority(day.markers))"></span>
+                          <span class="calendar-marker-tooltip" role="group" aria-label="Tasks on this date">
+                            @for (marker of day.markers; track marker.eventId) {
+                              <a class="calendar-tooltip-event" [routerLink]="['/events', marker.eventId]">
+                                <i [class]="markerClass(marker.priority)"></i>
+                                <span class="calendar-tooltip-icons">
+                                  @for (dateType of marker.dateTypes; track dateType) {
+                                    <mat-icon [attr.aria-label]="markerDateLabel(dateType)"
+                                              [attr.title]="markerDateLabel(dateType)">{{ markerIcon(dateType) }}</mat-icon>
+                                  }
+                                </span>
+                                <span class="calendar-tooltip-title">{{ marker.title }}</span>
+                                <mat-icon class="calendar-tooltip-arrow">chevron_right</mat-icon>
+                              </a>
+                            }
+                          </span>
+                        </span>
+                      }
+                    </span>
                   </td>
                 }
               </tr>
@@ -199,15 +224,16 @@
           </tbody>
         </table>
 
-        <div class="todays-reminder">
-          <div class="reminder-icon-wrap">
-            <mat-icon>wb_sunny</mat-icon>
-          </div>
-          <div class="reminder-body">
-            <span class="reminder-title">Today's Reminder</span>
-            <p class="reminder-sub">Don't forget to water the plants and check the mail.</p>
-          </div>
-          <span class="reminder-emoji">&#127807;</span>
+        @if (calendarError()) {
+          <p class="calendar-error"><mat-icon>error_outline</mat-icon>{{ calendarError() }}</p>
+        }
+
+        <div class="calendar-legend" aria-label="Task priority colours">
+          <span><i class="priority-critical"></i>Critical</span>
+          <span><i class="priority-high"></i>High</span>
+          <span><i class="priority-medium"></i>Medium</span>
+          <span><i class="priority-low"></i>Low</span>
+          <span><i class="priority-wish-list"></i>Wish List</span>
         </div>
       </mat-card-content>
     </mat-card>
@@ -224,22 +250,28 @@
           <mat-icon class="widget-icon">history</mat-icon>
           <mat-card-title>Recent Activity</mat-card-title>
         </div>
-        <a class="view-all-link" routerLink="/events">View all activity</a>
       </mat-card-header>
       <mat-card-content>
+        @if (recentActivityLoading()) { <mat-progress-bar mode="indeterminate" class="activity-loading"/> }
         <div class="activity-list">
-          @for (item of recentActivity; track item.title) {
-            <div class="activity-item">
-              <div class="activity-icon-wrap" [style.background]="item.bg">
-                <mat-icon [style.color]="item.color">{{ item.icon }}</mat-icon>
+          @for (item of recentActivity(); track item.recentItemViewId) {
+            <a class="activity-item" [routerLink]="recentItemLink(item)">
+              <div class="activity-icon-wrap" [class]="'activity-icon-wrap ' + item.itemType">
+                <mat-icon>{{ recentItemIcon(item) }}</mat-icon>
               </div>
               <div class="activity-info">
                 <span class="activity-title">{{ item.title }}</span>
-                <span class="activity-meta">{{ item.date }} &bull; {{ item.user }}</span>
+                <span class="activity-meta"><strong>{{ recentItemLabel(item) }}</strong><span>{{ item.viewedAt | date:'dd MMM yyyy, HH:mm' }}</span></span>
               </div>
-            </div>
+              <mat-icon class="activity-chevron">chevron_right</mat-icon>
+            </a>
+          } @empty {
+            @if (!recentActivityLoading() && !recentActivityError()) {
+              <div class="activity-empty"><mat-icon>history</mat-icon><span>Tasks, projects, and contacts you view will appear here.</span></div>
+            }
           }
         </div>
+        @if (recentActivityError()) { <p class="activity-error"><mat-icon>error_outline</mat-icon>{{ recentActivityError() }}</p> }
       </mat-card-content>
     </mat-card>
 

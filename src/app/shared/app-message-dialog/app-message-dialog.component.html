@@ -1,0 +1,11 @@
+<div class="dialog-heading" [attr.data-tone]="data.tone">
+  <span class="dialog-icon"><mat-icon>{{ data.icon }}</mat-icon></span>
+  <div><h2>{{ data.title }}</h2><p>{{ data.message }}</p></div>
+</div>
+@if (data.detail) {
+  <mat-dialog-content><div class="detail-panel" [attr.data-tone]="data.tone"><mat-icon>{{ data.tone === 'danger' ? 'warning' : 'info' }}</mat-icon><span>{{ data.detail }}</span></div></mat-dialog-content>
+}
+<mat-dialog-actions align="end">
+  @if (data.showCancel) { <button mat-button [mat-dialog-close]="false">{{ data.cancelText }}</button> }
+  <button mat-flat-button class="confirm-button" [attr.data-tone]="data.tone" [mat-dialog-close]="true">{{ data.confirmText }}</button>
+</mat-dialog-actions>

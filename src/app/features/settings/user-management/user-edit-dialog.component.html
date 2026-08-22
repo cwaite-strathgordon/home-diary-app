@@ -1,0 +1,71 @@
+<div mat-dialog-title class="dialog-title">
+  <span class="title-icon"><mat-icon>manage_accounts</mat-icon></span>
+  <div>
+    <h2>Edit user</h2>
+    <p>Update profile and access details</p>
+  </div>
+</div>
+
+<mat-dialog-content>
+  <div class="identity-panel">
+    <div><span>Auth0 identity</span><strong>{{ data.user.oAuthId || 'Not available' }}</strong></div>
+    <div><span>Last login</span><strong>{{ data.user.lastLoginAt ? (data.user.lastLoginAt | date:'medium') : 'Never' }}</strong></div>
+  </div>
+
+  <form [formGroup]="form" class="edit-form">
+    <div class="field-row">
+      <mat-form-field appearance="outline">
+        <mat-label>First name</mat-label>
+        <input matInput formControlName="firstName" maxlength="255" />
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Last name</mat-label>
+        <input matInput formControlName="lastName" maxlength="255" />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" maxlength="255" />
+      @if (form.controls['email'].hasError('email')) { <mat-error>Enter a valid email address</mat-error> }
+    </mat-form-field>
+
+    <div class="mobile-row">
+      <mat-form-field appearance="outline" class="country-code-field">
+        <mat-label>Country</mat-label>
+        <mat-select formControlName="countryCode">
+          <mat-select-trigger>
+            @for (option of countryCodes; track option.country) {
+              @if (option.code === form.controls['countryCode'].value) {
+                <span class="selected-country"><span class="flag">{{ option.flag }}</span>{{ option.code }}</span>
+              }
+            }
+          </mat-select-trigger>
+          @for (option of countryCodes; track option.country) {
+            <mat-option [value]="option.code">
+              <span class="country-option"><span class="flag">{{ option.flag }}</span><span>{{ option.country }}</span><strong>{{ option.code }}</strong></span>
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="mobile-number-field">
+        <mat-label>Mobile number</mat-label>
+        <input matInput type="tel" inputmode="tel" formControlName="mobileNumber" maxlength="40" />
+      </mat-form-field>
+    </div>
+
+    <div class="access-options">
+      <mat-checkbox formControlName="admin">Administrator</mat-checkbox>
+      <mat-checkbox formControlName="disabled">Disabled</mat-checkbox>
+    </div>
+    @if (isCurrentUser) {
+      <p class="self-note">You cannot remove your own administrator access or disable your own account.</p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-flat-button class="save-button" (click)="save()">Save changes</button>
+</mat-dialog-actions>

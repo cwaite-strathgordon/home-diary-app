@@ -1,0 +1,30 @@
+<main class="project-page app-page app-page--with-back">
+  @if (loading()) { <div class="state"><mat-spinner diameter="38"/>Loading project…</div> }
+  @else if (project(); as project) {
+    <div class="project-detail-content" [class.fade-out]="transitionFadeOut()">
+    <div class="app-back-row">
+      <button class="app-back-link" (click)="goBack()"><mat-icon>arrow_back</mat-icon>Back</button>
+      @if (listNavigation(); as navigation) {
+        <nav class="project-sequence-nav" aria-label="Project list navigation">
+          <button type="button" class="sequence-button" [disabled]="!navigation.previousProjectId || projectTransitioning()"
+                  (click)="openPreviousProject()" aria-label="Previous project">
+            <mat-icon>chevron_left</mat-icon><span>Previous</span>
+          </button>
+          <span class="sequence-position" aria-live="polite">Project {{ navigation.index + 1 }} of {{ navigation.total }}</span>
+          <button type="button" class="sequence-button" [disabled]="!navigation.nextProjectId || projectTransitioning()"
+                  (click)="openNextProject()" aria-label="Next project">
+            <span>Next</span><mat-icon>chevron_right</mat-icon>
+          </button>
+        </nav>
+      }
+    </div>
+    <header class="app-page-header"><div class="app-page-heading"><span class="app-page-icon" [matTooltip]="project.areaTitle || 'No area'"><mat-icon>{{ areaIcon(project.areaTitle) }}</mat-icon></span><div class="app-page-copy"><h1 class="app-page-title">{{ project.title }}</h1><p class="app-page-subtitle">Project Details</p><span class="project-status" [attr.data-status]="project.status">{{ project.status }}</span></div></div><div class="app-page-actions">@if(project.status === 'Archived'){<button mat-stroked-button class="restore-button" (click)="restore()"><mat-icon>unarchive</mat-icon>Restore project</button>}@else{<span [matTooltip]="archiveHint(project)"><button mat-stroked-button class="archive-button" [disabled]="!canArchive(project)" (click)="archive()"><mat-icon>archive</mat-icon>Archive</button></span>}<button mat-flat-button class="edit-button" (click)="edit()"><mat-icon>edit</mat-icon>Edit project</button></div></header>
+    <p class="project-description">{{ project.description || 'No project description has been added.' }}</p>
+    <section class="summary"><div><span>Tasks</span><strong>{{ project.totalTasks || 0 }}</strong></div><div><span>Active</span><strong>{{ project.activeTasks || 0 }}</strong></div><div><span>Completed</span><strong>{{ project.completedTasks || 0 }}</strong></div><div [class.alert]="project.overdueTasks"><span>Overdue</span><strong>{{ project.overdueTasks || 0 }}</strong></div><div><span>Start</span><strong>{{ project.startDate ? (project.startDate|date:'dd/MMM/yy') : '—' }}</strong></div><div><span>Target</span><strong>{{ project.targetCompletionDate ? (project.targetCompletionDate|date:'dd/MMM/yy') : '—' }}</strong></div></section>
+    @if(project.status !== 'Archived' && !canArchive(project)){<p class="archive-guidance"><mat-icon>info_outline</mat-icon>Complete the remaining {{ project.activeTasks }} {{ project.activeTasks===1?'task':'tasks' }} before this project can be archived.</p>}
+    <section class="tasks"><div class="section-title"><div><h2>Project tasks</h2><p>{{ tasks().length }} {{ tasks().length===1?'task':'tasks' }}</p></div>@if(project.status !== 'Archived'){<button mat-stroked-button (click)="addTask()"><mat-icon>add</mat-icon>Add task</button>}</div>
+      <mat-card class="task-list">@for(task of tasks();track task.eventId){<button class="task-row" (click)="viewTask(task)"><span class="task-icon"><mat-icon>task_alt</mat-icon></span><span class="task-copy"><strong>{{task.title}}</strong><small>{{task.eventTypeTitle||'Task'}} · {{task.areaTitle||'No area'}}</small></span><span class="priority" [attr.data-priority]="task.priorityTitle">{{task.priorityTitle}}</span><span class="date">{{task.targetCompletionDate?(task.targetCompletionDate|date:'dd/MMM/yy'):''}}</span><mat-icon>chevron_right</mat-icon></button>}@empty{<div class="empty">No tasks are assigned to this project yet.</div>}</mat-card>
+    </section>
+    </div>
+  }
+</main>

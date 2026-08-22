@@ -15,3 +15,9 @@ export interface EventStatus {
   title?: string;
   description?: string;
 }
+
+export interface EventPriority {
+  eventPriorityId: number;
+  title?: string;
+  description?: string;
+}

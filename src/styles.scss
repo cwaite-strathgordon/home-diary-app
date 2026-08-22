@@ -147,6 +147,18 @@ html {
   }
 }
 
+// Account menu is rendered in the global CDK overlay rather than inside the
+// app component, so its surface colour must be set at theme scope.
+.account-menu-panel.mat-mdc-menu-panel {
+  --mat-menu-container-color: #FFFBF7;
+  background-color: #FFFBF7 !important;
+  border: 1px solid #E8E4DC;
+  min-width: 190px !important;
+
+  .mat-mdc-menu-content { background-color: #FFFBF7 !important; }
+  .mat-mdc-menu-item:hover { background-color: #F5F3EF !important; }
+}
+
 // --- Cards ---
 .mat-mdc-card {
   border-radius: 14px !important;
@@ -270,8 +282,21 @@ html {
 
 // --- Datepicker / Calendar ---
 .mat-datepicker-content {
+  --mat-datepicker-calendar-container-background-color: #FFFFFF;
+  background-color: #FFFFFF !important;
   border-radius: 14px !important;
   box-shadow: 0 8px 32px rgba(60, 50, 30, 0.12) !important;
+}
+
+.mat-calendar,
+.mat-calendar-content {
+  background-color: #FFFFFF !important;
+}
+
+// Date inputs use the same white surface as dropdown controls.
+.mat-mdc-form-field:has(.mat-datepicker-input) .mat-mdc-text-field-wrapper,
+.mat-mdc-form-field:has(.mat-date-range-input) .mat-mdc-text-field-wrapper {
+  background-color: #FFFFFF !important;
 }
 
 .mat-calendar-body-selected {
@@ -323,9 +348,29 @@ html {
 }
 
 // --- Select / Dropdown ---
+.mat-mdc-form-field-type-mat-select .mat-mdc-text-field-wrapper {
+  background-color: #FFFFFF !important;
+}
+
 .mat-mdc-select-panel {
+  --mat-select-panel-background-color: #FFFFFF;
+  background-color: #FFFFFF !important;
   border-radius: 10px !important;
   box-shadow: 0 4px 16px rgba(60, 50, 30, 0.10) !important;
+}
+
+.mat-mdc-option {
+  background-color: #FFFFFF;
+}
+
+.mat-mdc-option:hover:not(.mdc-list-item--disabled),
+.mat-mdc-option.mat-mdc-option-active {
+  background-color: #F0F8F8 !important;
+}
+
+// Keep native selects consistent if one is introduced outside Material.
+select {
+  background-color: #FFFFFF;
 }
 
 .mat-mdc-option.mdc-list-item--selected:not(.mat-mdc-option-multiple) {
@@ -365,9 +410,9 @@ body {
   padding: 0;
   background-color: #FAFAF8;
   font-family: 'DM Sans', -apple-system, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
-  color: #0d0d0d;
+  font-size: 16px;
+  line-height: 1.55;
+  color: #161616;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -409,3 +454,291 @@ body {
 .gap-3 { gap: 12px; }
 .gap-4 { gap: 16px; }
 .gap-6 { gap: 24px; }
+
+
+// ============================================================
+// READABILITY LAYER
+// Larger, higher-contrast typography inspired by clear financial interfaces.
+// Compact labels and badges remain small, while actionable and content text
+// receives more visual weight.
+// ============================================================
+
+html {
+  --mat-sys-on-background: #161616;
+  --mat-sys-on-surface: #161616;
+  --mat-sys-on-surface-variant: #30302d;
+}
+
+body,
+button,
+input,
+textarea,
+select {
+  color: #161616;
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+p {
+  color: #30302d;
+}
+
+// Navigation and common actions
+.mat-mdc-list-item-title,
+[matListItemTitle] {
+  color: #242421;
+  font-size: 15px !important;
+  font-weight: 550 !important;
+}
+
+.mat-mdc-button,
+.mat-mdc-unelevated-button,
+.mat-mdc-outlined-button {
+  font-size: 14px !important;
+  font-weight: 650 !important;
+}
+
+// Form controls
+.mat-mdc-form-field {
+  --mat-form-field-container-text-size: 15px;
+  --mat-form-field-container-text-line-height: 22px;
+  --mat-form-field-subscript-text-size: 12px;
+  --mat-form-field-outlined-label-text-size: 14px;
+}
+
+.mat-mdc-input-element,
+.mat-mdc-select-value,
+.mat-mdc-select-placeholder {
+  color: #181816 !important;
+  font-size: 15px !important;
+}
+
+.mat-mdc-floating-label {
+  color: #41413d !important;
+  font-size: 14px !important;
+}
+
+.mat-mdc-option .mdc-list-item__primary-text {
+  color: #20201d !important;
+  font-size: 15px !important;
+}
+
+// Tables and lists
+.mat-mdc-table .mat-mdc-header-cell {
+  color: #3f3f3a !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.mat-mdc-table .mat-mdc-cell {
+  color: #242421 !important;
+  font-size: 15px !important;
+  line-height: 1.45;
+}
+
+// Cards and dialogs
+.mat-mdc-card-title {
+  color: #1b1b19 !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+
+.mat-mdc-card-subtitle {
+  color: #565650 !important;
+  font-size: 13px !important;
+}
+
+.mat-mdc-dialog-content {
+  color: #242421 !important;
+  font-size: 15px !important;
+  line-height: 1.55;
+}
+
+.mat-mdc-dialog-title h2,
+h2.mat-mdc-dialog-title {
+  color: #181816 !important;
+  font-size: 21px !important;
+  font-weight: 700 !important;
+}
+
+// Common page copy used throughout the application
+.page-subtitle,
+.greeting-sub,
+.page-header p:not(.eyebrow),
+.card-copy p,
+.description,
+.description-panel p,
+.note-row p,
+.contact-row p {
+  color: #3f3f3a !important;
+  font-size: 15px !important;
+  line-height: 1.6 !important;
+}
+
+.detail-item span:last-child,
+.summary-grid strong,
+.identity-panel strong,
+.row-copy h2,
+.contact-row h3,
+.note-heading h3 {
+  color: #1e1e1b !important;
+  font-size: 15px !important;
+}
+
+// Secondary metadata should still be clearly legible.
+.user-email,
+.activity-meta,
+.maint-freq,
+.contact-row p,
+.content-card .mat-mdc-card-subtitle,
+.audit-card dt,
+.audit-card dd,
+.note-heading time,
+.row-copy p,
+.self-note {
+  color: #565650 !important;
+  font-size: 13px !important;
+}
+// Smooth route changes inside the application shell. The toolbar and navigation
+// are outside this named transition, so only the page content cross-fades.
+::view-transition-group(app-main-pane) {
+  animation-duration: 320ms;
+  animation-timing-function: ease-in-out;
+}
+
+::view-transition-old(app-main-pane) {
+  animation: app-pane-fade-out 320ms ease-in-out both;
+}
+
+::view-transition-new(app-main-pane) {
+  animation: app-pane-fade-in 320ms ease-in-out both;
+}
+
+@keyframes app-pane-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes app-pane-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(app-main-pane),
+  ::view-transition-old(app-main-pane),
+  ::view-transition-new(app-main-pane) {
+    animation-duration: 1ms !important;
+  }
+}
+
+// Shared page anchor. Every signed-in page uses the same shell and header
+// geometry so route transitions fade icons and titles in place.
+.app-page {
+  box-sizing: border-box;
+  max-width: 1240px !important;
+  padding: 28px 28px 40px !important;
+  width: 100%;
+}
+
+.app-page--with-back { padding-top: 28px !important; }
+.app-page--with-back .app-page-header { margin-bottom: 0; }
+
+.app-back-row {
+  align-items: center;
+  display: flex;
+  height: auto;
+  margin-bottom: 0;
+  padding: 10px 0;
+}
+
+.app-back-link {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 16px;
+  color: #246b6b;
+  cursor: pointer;
+  display: inline-flex;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 650;
+  gap: 4px;
+  line-height: 20px;
+  padding: 4px 10px 4px 3px;
+  text-decoration: none;
+}
+
+.app-back-link:hover { background: #e8f4f4; }
+.app-back-link mat-icon { font-size: 17px; height: 17px; width: 17px; }
+
+.app-page-header {
+  align-items: center;
+  display: flex;
+  gap: 20px;
+  justify-content: space-between;
+  margin: 0 0 16px;
+  min-height: 48px;
+}
+
+.app-page-heading {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  gap: 13px !important;
+  min-width: 0;
+}
+
+.app-page-icon {
+  align-items: center;
+  align-self: flex-start;
+  background: #e8f4f4;
+  border-radius: 12px;
+  color: #2a7a7a;
+  display: flex;
+  flex: 0 0 48px !important;
+  height: 48px !important;
+  justify-content: center;
+  width: 48px !important;
+}
+
+.app-page-icon mat-icon { font-size: 25px; height: 25px; width: 25px; }
+.app-page-icon--orange { background: #fdf0e0; color: #d36c18; }
+.app-page-icon--purple { background: #eee9fa; color: #624999; }
+
+.app-page-copy { min-width: 0; }
+.app-page-copy .app-page-eyebrow {
+  color: #246b6b !important;
+  font-size: 11px !important;
+  font-weight: 750;
+  letter-spacing: .08em;
+  line-height: 1.2 !important;
+  margin: 0 0 1px !important;
+  text-transform: uppercase;
+}
+
+.app-page-copy .app-page-title {
+  color: #171715 !important;
+  font-size: 26px !important;
+  font-weight: 700;
+  line-height: 1.15 !important;
+  margin: 0 !important;
+}
+
+.app-page-copy .app-page-subtitle {
+  color: #454540 !important;
+  font-size: 14px !important;
+  line-height: 1.25 !important;
+  margin: 1px 0 0 !important;
+}
+
+.app-page-actions { align-items: center; display: flex; flex: 0 0 auto; gap: 9px; }
+
+@media (max-width: 720px) {
+  .app-page { padding: 20px 16px 32px !important; }
+  .app-page--with-back { padding-top: 20px !important; }
+  .app-page-header { align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+  .app-page-heading { flex-basis: calc(100% - 1px); }
+  .app-page-actions { width: 100%; }
+  .app-page-icon { flex-basis: 44px !important; height: 44px !important; width: 44px !important; }
+  .app-page-copy .app-page-title { font-size: 24px !important; }
+}

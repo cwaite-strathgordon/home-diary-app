@@ -1,0 +1,6 @@
+.dialog-title { align-items: center; display: flex; gap: 14px; padding: 24px 24px 15px !important; }
+.dialog-title h2 { color: #151512; font-size: 22px; margin: 0 0 3px; }.dialog-title p { color: #5b5b54; font-size: 13px; margin: 0; }
+.title-icon { align-items: center; background: #d9eeee; border-radius: 10px; color: #216d6d; display: flex; height: 44px; justify-content: center; width: 44px; }
+mat-dialog-content { min-width: 520px; padding: 8px 24px !important; }.project-form { display: flex; flex-direction: column; gap: 4px; }.field-grid, .date-grid { display: grid; gap: 14px; grid-template-columns: 1fr 1fr; }
+.save-button { background: #2a7a7a !important; color: white !important; } mat-dialog-actions { padding: 14px 24px 22px !important; }
+@media (max-width: 620px) { mat-dialog-content { min-width: 0; }.field-grid, .date-grid { grid-template-columns: 1fr; } }
