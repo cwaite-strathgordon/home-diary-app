@@ -6,6 +6,7 @@ import { provideAuth0 } from '@auth0/auth0-angular';
 import { authHttpInterceptorFn } from '@auth0/auth0-angular';
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
+import { apiAvailabilityInterceptor } from './core/interceptors/api-availability.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,6 +27,6 @@ export const appConfig: ApplicationConfig = {
       },
     }),
     // Auth0's interceptor adds Authorization: Bearer <token> automatically
-    provideHttpClient(withInterceptors([authHttpInterceptorFn])),
+    provideHttpClient(withInterceptors([apiAvailabilityInterceptor, authHttpInterceptorFn])),
   ],
 };
