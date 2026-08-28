@@ -18,6 +18,7 @@ import { GlobalSearchService } from './core/services/global-search.service';
 import { GlobalSearchResult } from './core/models/global-search-result.model';
 import { EventDocumentsService } from './core/services/event-documents.service';
 import { EventsService } from './core/services/events.service';
+import { ApiAvailabilityService } from './core/services/api-availability.service';
 
 @Component({
   selector: 'app-root',
@@ -35,6 +36,7 @@ import { EventsService } from './core/services/events.service';
 export class App {
   private static readonly navigationCookie = 'homediary_nav_collapsed';
   auth = inject(AuthService);
+  readonly apiAvailability = inject(ApiAvailabilityService);
   private readonly breakpoints = inject(BreakpointObserver);
   private readonly router = inject(Router);
   private readonly globalSearch = inject(GlobalSearchService);
@@ -145,4 +147,5 @@ export class App {
     document.cookie = `${App.navigationCookie}=${collapsed ? '1' : '0'}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
   }
   signOut() { this.auth.logout(); }
+  retryApi(): void { window.location.reload(); }
 }
