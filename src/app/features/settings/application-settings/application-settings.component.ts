@@ -29,6 +29,14 @@ export class ApplicationSettingsComponent implements OnInit {
       nonNullable: true,
       validators: [Validators.required, Validators.min(1), Validators.max(100)],
     }),
+    inboundEmailAddress: new FormControl('tasks@homediary.app', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.email],
+    }),
+    maximumImageUploadMegabytes: new FormControl(3, {
+      nonNullable: true,
+      validators: [Validators.required, Validators.min(1), Validators.max(20)],
+    }),
   });
 
   loading = true;
@@ -38,7 +46,7 @@ export class ApplicationSettingsComponent implements OnInit {
 
   ngOnInit(): void {
     this.service.getSettings().pipe(finalize(() => this.loading = false)).subscribe({
-      next: settings => this.form.controls.recentItemsLimit.setValue(settings.recentItemsLimit),
+      next: settings => this.form.setValue(settings),
       error: error => this.errorMessage = this.errorText(error, 'Unable to load application settings.'),
     });
   }
@@ -51,11 +59,11 @@ export class ApplicationSettingsComponent implements OnInit {
     this.saving = true;
     this.errorMessage = '';
     this.successMessage = '';
-    this.service.updateSettings(this.form.controls.recentItemsLimit.value)
+    this.service.updateSettings(this.form.getRawValue())
       .pipe(finalize(() => this.saving = false))
       .subscribe({
         next: settings => {
-          this.form.controls.recentItemsLimit.setValue(settings.recentItemsLimit);
+          this.form.setValue(settings);
           this.successMessage = 'Application settings saved.';
         },
         error: error => this.errorMessage = this.errorText(error, 'Unable to save application settings.'),

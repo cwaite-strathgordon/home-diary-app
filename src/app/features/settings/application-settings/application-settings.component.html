@@ -18,6 +18,31 @@
   } @else {
     <form [formGroup]="form" (ngSubmit)="save()">
       <mat-card class="settings-card">
+        <mat-card-header><mat-card-title>Inbound email</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <p class="setting-description">Email tasks to this shared address. Messages are assigned to a property using the sender's HomeDiary user account.</p>
+          <mat-form-field appearance="outline" class="email-field">
+            <mat-label>Inbound task email address</mat-label>
+            <input matInput type="email" formControlName="inboundEmailAddress" autocomplete="off"/>
+            <mat-hint>The production address is tasks@homediary.app.</mat-hint>
+            @if (form.controls.inboundEmailAddress.invalid) { <mat-error>Enter a valid email address.</mat-error> }
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="settings-card">
+        <mat-card-header><mat-card-title>Image uploads</mat-card-title></mat-card-header>
+        <mat-card-content>
+          <p class="setting-description">Set the maximum size allowed for each task image.</p>
+          <mat-form-field appearance="outline">
+            <mat-label>Maximum image size</mat-label>
+            <input matInput type="number" min="1" max="20" step="1" formControlName="maximumImageUploadMegabytes"/>
+            <span matTextSuffix>MB</span>
+            <mat-hint>Between 1 and 20 MB. The default is 3 MB.</mat-hint>
+            @if (form.controls.maximumImageUploadMegabytes.invalid) { <mat-error>Enter a value between 1 and 20 MB.</mat-error> }
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+      <mat-card class="settings-card">
         <mat-card-header><mat-card-title>Recent activity</mat-card-title></mat-card-header>
         <mat-card-content>
           <p class="setting-description">Choose how many recently viewed tasks, projects, and contacts are retained for each user.</p>

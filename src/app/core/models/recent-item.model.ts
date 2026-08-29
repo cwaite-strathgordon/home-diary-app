@@ -10,4 +10,6 @@ export interface RecentItem {
 
 export interface ApplicationSettings {
   recentItemsLimit: number;
+  inboundEmailAddress: string;
+  maximumImageUploadMegabytes: number;
 }

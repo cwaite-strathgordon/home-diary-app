@@ -1,0 +1,19 @@
+<main class="service-unavailable-page" role="alert" aria-live="assertive">
+  <section class="service-unavailable-card">
+    <img src="assets/images/title-bar-app-name.png" alt="HomeDiary" class="brand-logo" />
+    <span class="status-icon"><mat-icon>cloud_off</mat-icon></span>
+    <p class="eyebrow">Please try again shortly</p>
+    <h1>HomeDiary is temporarily unavailable</h1>
+    <p class="message">
+      We couldn’t load your information right now. This is usually temporary, so please wait a
+      moment and try again.
+    </p>
+    <p class="save-note">
+      If you were saving something, check whether it completed before repeating the action.
+    </p>
+    <button mat-flat-button type="button" (click)="tryAgain()">
+      <mat-icon>refresh</mat-icon>
+      Try again
+    </button>
+  </section>
+</main>

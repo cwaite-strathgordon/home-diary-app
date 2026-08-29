@@ -22,7 +22,7 @@ export class RecentItemsService {
     return this.http.get<ApplicationSettings>(this.settingsUrl);
   }
 
-  updateSettings(recentItemsLimit: number): Observable<ApplicationSettings> {
-    return this.http.put<ApplicationSettings>(this.settingsUrl, { recentItemsLimit });
+  updateSettings(settings: ApplicationSettings): Observable<ApplicationSettings> {
+    return this.http.put<ApplicationSettings>(this.settingsUrl, settings);
   }
 }

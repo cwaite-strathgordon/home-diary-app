@@ -71,6 +71,7 @@ export class EventFullDetailComponent implements OnInit, OnDestroy {
   uploadingImages = signal(false);
   imageDragActive = signal(false);
   imageError = signal('');
+  maximumImageUploadMegabytes = signal(3);
   hoveredContact = signal<Contact | null>(null);
   contactPreviewX = signal(0);
   contactPreviewY = signal(0);
@@ -123,6 +124,10 @@ export class EventFullDetailComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.recentItems.getSettings().subscribe({
+      next: settings => this.maximumImageUploadMegabytes.set(settings.maximumImageUploadMegabytes),
+      error: () => undefined,
+    });
     this.routeSubscription = this.route.paramMap.subscribe(params => {
       const eventId = Number(params.get('id'));
       if (!Number.isInteger(eventId) || eventId <= 0) {
@@ -402,10 +407,14 @@ export class EventFullDetailComponent implements OnInit, OnDestroy {
     if (!currentEvent || this.uploadingImages()) return;
     const files = Array.from(fileList);
     const allowed = new Set(['jpg', 'jpeg', 'png', 'gif', 'webp']);
+    const maximumMegabytes = this.maximumImageUploadMegabytes();
+    const maximumBytes = maximumMegabytes * 1024 * 1024;
     const invalid = files.find(file =>
-      !allowed.has(file.name.split('.').pop()?.toLowerCase() ?? '') || file.size > 20 * 1024 * 1024);
+      !allowed.has(file.name.split('.').pop()?.toLowerCase() ?? '') || file.size > maximumBytes);
     if (invalid) {
-      this.imageError.set('Use JPEG, PNG, GIF, or WebP images no larger than 20 MB.');
+      this.imageError.set(
+        `Use JPEG, PNG, GIF, or WebP images no larger than ${maximumMegabytes} MB.`,
+      );
       return;
     }
 

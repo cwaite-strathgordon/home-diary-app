@@ -1,32 +1,6 @@
-@if (apiAvailability.unavailable()) {
-  <aside class="api-unavailable-banner" role="alert" aria-live="assertive">
-    <mat-icon>cloud_off</mat-icon>
-    <div>
-      <strong>HomeDiary API unavailable</strong>
-      <span>HomeDiary cannot reach its API. Check your connection or start the local .NET API, then try again.</span>
-    </div>
-    <button mat-flat-button type="button" (click)="retryApi()">Retry</button>
-  </aside>
-}
-
-@if (apiAvailability.serverError(); as status) {
-  <main class="global-server-error-page" role="alert" aria-live="assertive">
-    <section class="global-server-error-card">
-      <span class="global-server-error-icon"><mat-icon>error_outline</mat-icon></span>
-      <p class="eyebrow">Server error {{ status }}</p>
-      <h1>HomeDiary encountered a problem</h1>
-      <p>Your last action may not have completed. Please try again. If the problem continues, check the API logs before repeating the action.</p>
-      <div class="global-server-error-actions">
-        <button mat-flat-button type="button" (click)="retryApi()"><mat-icon>refresh</mat-icon>Retry</button>
-        @if (isAuthenticated()) {
-          <button mat-button type="button" (click)="signOut()">Sign out</button>
-        }
-      </div>
-    </section>
-  </main>
-}
-
-@if (auth.accessDenied()) {
+@if (apiAvailability.hasFailure()) {
+  <router-outlet />
+} @else if (auth.accessDenied()) {
   <main class="access-denied-page">
     <div class="access-denied-card">
       <mat-icon>lock</mat-icon>

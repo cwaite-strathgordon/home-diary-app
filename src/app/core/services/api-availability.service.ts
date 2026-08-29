@@ -1,24 +1,37 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
+
+type ApiFailure =
+  | { kind: 'unavailable' }
+  | { kind: 'server-error'; status: number };
 
 @Injectable({ providedIn: 'root' })
 export class ApiAvailabilityService {
-  private readonly unavailableState = signal(false);
-  private readonly serverErrorState = signal<number | null>(null);
+  private readonly failureState = signal<ApiFailure | null>(null);
+  private readonly returnUrlState = signal('/dashboard');
 
-  readonly unavailable = this.unavailableState.asReadonly();
-  readonly serverError = this.serverErrorState.asReadonly();
+  readonly hasFailure = computed(() => this.failureState() !== null);
+  readonly unavailable = computed(() => this.failureState()?.kind === 'unavailable');
+  readonly serverError = computed(() => {
+    const failure = this.failureState();
+    return failure?.kind === 'server-error' ? failure.status : null;
+  });
+  readonly returnUrl = this.returnUrlState.asReadonly();
 
-  markUnavailable(): void {
-    this.unavailableState.set(true);
+  markUnavailable(returnUrl: string): void {
+    this.captureFailure({ kind: 'unavailable' }, returnUrl);
   }
 
-  markAvailable(): void {
-    this.unavailableState.set(false);
+  markServerError(status: number, returnUrl: string): void {
+    this.captureFailure({ kind: 'server-error', status }, returnUrl);
   }
 
-  markServerError(status: number): void {
+  private captureFailure(failure: ApiFailure, returnUrl: string): void {
     // Keep the first failure visible until the user explicitly retries. A later
     // background request must not hide an operation that may not have completed.
-    if (this.serverErrorState() === null) this.serverErrorState.set(status);
+    if (this.failureState() !== null) return;
+
+    if (returnUrl && !returnUrl.startsWith('/service-unavailable'))
+      this.returnUrlState.set(returnUrl);
+    this.failureState.set(failure);
   }
 }

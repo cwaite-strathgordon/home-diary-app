@@ -16,6 +16,12 @@ const authGuard = () => {
 export const routes: Routes = [
   { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
   {
+    path: 'service-unavailable',
+    loadComponent: () =>
+      import('./features/service-unavailable/service-unavailable.component')
+        .then(m => m.ServiceUnavailableComponent),
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/login/login.component').then(m => m.LoginComponent),

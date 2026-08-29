@@ -147,5 +147,4 @@ export class App {
     document.cookie = `${App.navigationCookie}=${collapsed ? '1' : '0'}; Path=/; Max-Age=31536000; SameSite=Lax${secure}`;
   }
   signOut() { this.auth.logout(); }
-  retryApi(): void { window.location.reload(); }
 }
